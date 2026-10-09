@@ -1,0 +1,6 @@
+{
+  "name": "Balaji AC Service",
+  "description": "AC & Fridge repair, jet pump chemical service, gas charging and maintenance by Balaji Air Conditioners.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

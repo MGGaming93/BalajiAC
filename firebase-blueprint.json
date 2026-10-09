@@ -1,0 +1,125 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "Registered customer or admin profile",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "Auth UID" },
+        "phone": { "type": "string", "description": "Customer 10 digit mobile number" },
+        "name": { "type": "string", "description": "Full name" },
+        "address": { "type": "string", "description": "Service street address" },
+        "area": { "type": "string", "description": "Area or colony" },
+        "role": { "type": "string", "description": "CUSTOMER or ADMIN" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["phone", "name"]
+    },
+    "Service": {
+      "title": "Service",
+      "description": "AC & Fridge Service Catalog item",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "estimatedTime": { "type": "string" },
+        "startingPrice": { "type": "number" },
+        "isActive": { "type": "boolean" }
+      },
+      "required": ["id", "name", "description", "estimatedTime"]
+    },
+    "Booking": {
+      "title": "Booking",
+      "description": "AC & Fridge Service booking appointment",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "customerName": { "type": "string" },
+        "customerPhone": { "type": "string" },
+        "address": { "type": "string" },
+        "area": { "type": "string" },
+        "serviceName": { "type": "string" },
+        "units": { "type": "number" },
+        "modelType": { "type": "string" },
+        "issueNotes": { "type": "string" },
+        "couponCode": { "type": "string" },
+        "discountAmount": { "type": "number" },
+        "billAmount": { "type": "number" },
+        "status": { "type": "string" },
+        "technicianName": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "customerName", "customerPhone", "address", "serviceName"]
+    },
+    "Offer": {
+      "title": "Offer",
+      "description": "Promotional coupon code",
+      "type": "object",
+      "properties": {
+        "code": { "type": "string" },
+        "title": { "type": "string" },
+        "discountPercent": { "type": "number" },
+        "maxDiscount": { "type": "number" },
+        "description": { "type": "string" },
+        "isActive": { "type": "boolean" }
+      },
+      "required": ["code", "title"]
+    },
+    "Gallery": {
+      "title": "Gallery",
+      "description": "Work photos item",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "category": { "type": "string" },
+        "description": { "type": "string" },
+        "tag": { "type": "string" }
+      },
+      "required": ["id", "title", "category"]
+    },
+    "Review": {
+      "title": "Review",
+      "description": "Customer review and owner reply",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "customerName": { "type": "string" },
+        "rating": { "type": "number" },
+        "dateText": { "type": "string" },
+        "comment": { "type": "string" },
+        "serviceUsed": { "type": "string" },
+        "ownerReply": { "type": "string" },
+        "ownerReplyBy": { "type": "string" }
+      },
+      "required": ["id", "customerName", "comment", "serviceUsed"]
+    }
+  },
+  "firestore": {
+    "/services/{serviceId}": {
+      "schema": "Service",
+      "description": "Service catalog items"
+    },
+    "/bookings/{bookingId}": {
+      "schema": "Booking",
+      "description": "Service appointment bookings"
+    },
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profiles"
+    },
+    "/offers/{offerId}": {
+      "schema": "Offer",
+      "description": "Promotional offers"
+    },
+    "/gallery/{galleryId}": {
+      "schema": "Gallery",
+      "description": "Work portfolio"
+    },
+    "/reviews/{reviewId}": {
+      "schema": "Review",
+      "description": "Customer feedback and owner replies"
+    }
+  }
+}

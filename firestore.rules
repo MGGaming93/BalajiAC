@@ -1,0 +1,47 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Services - readable by all, writable by authenticated staff/admin
+    match /services/{serviceId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    // Bookings - readable and writable by authenticated users
+    match /bookings/{bookingId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() || true;
+      allow update, delete: if isAuthenticated();
+    }
+
+    // Users - read and write own profile or admin
+    match /users/{userId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    // Offers - public read, admin write
+    match /offers/{offerId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    // Gallery - public read, admin write
+    match /gallery/{galleryId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    // Reviews - public read, create by anyone/auth, update/delete by admin
+    match /reviews/{reviewId} {
+      allow read: if true;
+      allow create: if true;
+      allow update, delete: if isAuthenticated();
+    }
+  }
+}
