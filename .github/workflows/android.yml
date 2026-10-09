@@ -4,7 +4,7 @@ on:
 workflow_dispatch:
 push:
 paths:
-- 'BalajiAc.zip'
+- '**'
 - '.github/workflows/android.yml'
 
 jobs:
@@ -13,11 +13,6 @@ runs-on: ubuntu-latest
 steps:
 - name: Checkout code
 uses: actions/checkout@v4
-
-  - name: Extract project
-    run: |
-      unzip -o BalajiAc.zip -d project
-      ls -la project
 
   - name: Set up Java
     uses: actions/setup-java@v4
@@ -29,7 +24,6 @@ uses: actions/checkout@v4
     uses: gradle/actions/setup-gradle@v4
 
   - name: Build APK
-    working-directory: project
     run: |
       chmod +x gradlew
       ./gradlew assembleDebug
@@ -38,4 +32,4 @@ uses: actions/checkout@v4
     uses: actions/upload-artifact@v4
     with:
       name: BalajiAC-APK
-      path: project/app/build/outputs/apk/debug/*.apk
+      path: app/build/outputs/apk/debug/*.apk
