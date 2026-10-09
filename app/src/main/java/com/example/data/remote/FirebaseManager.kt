@@ -13,11 +13,14 @@ import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential.Companion.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL
 import com.google.firebase.FirebaseApp
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.FirebaseException
+import com.google.firebase.auth.*
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
+import java.util.concurrent.TimeUnit
 
 class FirebaseManager(private val context: Context) {
 
@@ -114,6 +117,71 @@ class FirebaseManager(private val context: Context) {
         } catch (e: Exception) {
             Log.e("FirebaseManager", "Google Sign-In failed", e)
             onError(e.localizedMessage ?: "Sign-In error")
+        }
+    }
+
+    fun sendPhoneOtp(
+        activity: Activity,
+        phoneNumber: String,
+        onCodeSent: (String, PhoneAuthProvider.ForceResendingToken) -> Unit,
+        onVerificationCompleted: (PhoneAuthCredential) -> Unit,
+        onVerificationFailed: (Exception) -> Unit,
+        resendingToken: PhoneAuthProvider.ForceResendingToken? = null
+    ) {
+        val optionsBuilder = PhoneAuthOptions.newBuilder(auth)
+            .setPhoneNumber(phoneNumber)
+            .setTimeout(60L, TimeUnit.SECONDS)
+            .setActivity(activity)
+            .setCallbacks(object : PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
+                override fun onVerificationCompleted(credential: PhoneAuthCredential) {
+                    Log.d("FirebaseManager", "Phone auth auto-retrieval completed")
+                    onVerificationCompleted(credential)
+                }
+
+                override fun onVerificationFailed(e: FirebaseException) {
+                    Log.e("FirebaseManager", "Phone auth verification failed: ${e.message}", e)
+                    onVerificationFailed(e)
+                }
+
+                override fun onCodeSent(
+                    verificationId: String,
+                    token: PhoneAuthProvider.ForceResendingToken
+                ) {
+                    Log.d("FirebaseManager", "Phone auth code sent: $verificationId")
+                    onCodeSent(verificationId, token)
+                }
+            })
+
+        if (resendingToken != null) {
+            optionsBuilder.setForceResendingToken(resendingToken)
+        }
+
+        PhoneAuthProvider.verifyPhoneNumber(optionsBuilder.build())
+    }
+
+    suspend fun verifyOtpAndSignIn(
+        verificationId: String,
+        otpCode: String
+    ): Result<FirebaseUser?> = withContext(Dispatchers.IO) {
+        try {
+            val credential = PhoneAuthProvider.getCredential(verificationId, otpCode)
+            val authResult = auth.signInWithCredential(credential).await()
+            Result.success(authResult.user)
+        } catch (e: Exception) {
+            Log.e("FirebaseManager", "verifyOtpAndSignIn failed", e)
+            Result.failure(e)
+        }
+    }
+
+    suspend fun signInWithPhoneCredential(
+        credential: PhoneAuthCredential
+    ): Result<FirebaseUser?> = withContext(Dispatchers.IO) {
+        try {
+            val authResult = auth.signInWithCredential(credential).await()
+            Result.success(authResult.user)
+        } catch (e: Exception) {
+            Log.e("FirebaseManager", "signInWithPhoneCredential failed", e)
+            Result.failure(e)
         }
     }
 }
