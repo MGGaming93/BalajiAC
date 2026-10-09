@@ -25,6 +25,11 @@ jobs:
     - name: Generate dummy debug keystore
       run: keytool -genkey -v -keystore debug.keystore -alias androiddebugkey -storepass android -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
 
+    - name: Fix Missing Firebase ID
+      run: |
+        mkdir -p app/src/main/res/values
+        echo '<?xml version="1.0" encoding="utf-8"?><resources><string name="default_web_client_id">dummy_id</string></resources>' > app/src/main/res/values/firebase_dummy.xml
+
     - name: Build Debug APK
       run: |
         if [ -f "gradlew" ]; then
@@ -40,4 +45,3 @@ jobs:
       with:
         name: my-android-app
         path: '**/*.apk'
-        
