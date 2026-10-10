@@ -16,8 +16,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInParent
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
@@ -76,6 +77,7 @@ fun HomeScreen(
     var appliedCoupon by remember { mutableStateOf<PromoOffer?>(null) }
     var couponError by remember { mutableStateOf<String?>(null) }
     var isBookingSubmitting by remember { mutableStateOf(false) }
+    var bookingFormYPosition by remember { mutableIntStateOf(0) }
 
     // Pre-fill booking fields when logged in
     LaunchedEffect(isLoggedIn, currentName, currentPhone, currentAddress, currentArea) {
@@ -508,6 +510,12 @@ fun HomeScreen(
                             selectedServiceName = service.name
                             if (!isLoggedIn) {
                                 showAuthDialog = true
+                            } else {
+                                coroutineScope.launch {
+                                    val targetY = (bookingFormYPosition - 80).coerceAtLeast(0)
+                                    scrollState.animateScrollTo(targetY)
+                                }
+                                Toast.makeText(context, "${service.name} selected! Form par scroll ho gaya.", Toast.LENGTH_SHORT).show()
                             }
                         }
                     ) {
@@ -586,14 +594,18 @@ fun HomeScreen(
                                     if (!isLoggedIn) {
                                         showAuthDialog = true
                                     } else {
-                                        Toast.makeText(context, "${service.name} selected in form!", Toast.LENGTH_SHORT).show()
+                                        coroutineScope.launch {
+                                            val targetY = (bookingFormYPosition - 80).coerceAtLeast(0)
+                                            scrollState.animateScrollTo(targetY)
+                                        }
+                                        Toast.makeText(context, "${service.name} selected! Form par scroll ho gaya.", Toast.LENGTH_SHORT).show()
                                     }
                                 },
                                 shape = RoundedCornerShape(10.dp),
                                 colors = ButtonDefaults.buttonColors(containerColor = BalajiNavyDark),
                                 contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
                             ) {
-                                Text("Select", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = BalajiCardWhite)
+                                Text("Book Now", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = BalajiCardWhite)
                             }
                         }
                     }
@@ -611,6 +623,9 @@ fun HomeScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
+                    .onGloballyPositioned { coordinates ->
+                        bookingFormYPosition = coordinates.positionInParent().y.toInt()
+                    }
                     .testTag("booking_section")
             ) {
                 if (!isLoggedIn) {
@@ -1082,13 +1097,10 @@ fun HomeScreen(
                                             discountAmount = discount
                                         )
 
-                                        // SILENT WHATSAPP BOOKING INTEGRATION:
-                                        // Formats full booking text and transmits directly to Business WhatsApp (+91 9157896306)
-                                        val whatsappMsg = repository.formatBookingWhatsAppText(newBooking)
-                                        repository.launchWhatsApp(context, BalajiRepository.BUSINESS_PHONE, whatsappMsg)
-
+                                        // User stays on app! Booking is saved in local DB, Google Sheets and Firebase.
                                         isBookingSubmitting = false
                                         showBookingSuccessDialog = newBooking
+                                        Toast.makeText(context, "🎉 Appointment Book Ho Gayi! ID: ${newBooking.id}", Toast.LENGTH_SHORT).show()
 
                                         // Reset fields
                                         issueNotes = ""
@@ -1424,7 +1436,11 @@ fun HomeScreen(
             onDismiss = { showAuthDialog = false },
             onAuthSuccess = { phone, name ->
                 showAuthDialog = false
-                Toast.makeText(context, "Welcome $name!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Welcome $name! Appointment form ready.", Toast.LENGTH_SHORT).show()
+                coroutineScope.launch {
+                    val targetY = (bookingFormYPosition - 80).coerceAtLeast(0)
+                    scrollState.animateScrollTo(targetY)
+                }
             }
         )
     }
@@ -1440,22 +1456,143 @@ fun HomeScreen(
         )
     }
 
-    // BOOKING SUCCESS DIALOG
+    // BOOKING SUCCESS DIALOG (Keeps user on the app with direct WhatsApp option)
     if (showBookingSuccessDialog != null) {
         val b = showBookingSuccessDialog!!
         AlertDialog(
             onDismissRequest = { showBookingSuccessDialog = null },
+            icon = {
+                Box(
+                    modifier = Modifier
+                        .size(56.dp)
+                        .background(BalajiGuaranteeGreen.copy(alpha = 0.15f), CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        Icons.Default.CheckCircle,
+                        contentDescription = "Success",
+                        tint = BalajiGuaranteeGreen,
+                        modifier = Modifier.size(36.dp)
+                    )
+                }
+            },
             title = {
-                Text("🎉 Booking Confirmed!", fontWeight = FontWeight.Bold, color = BalajiTextDark)
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        "🎉 Appointment Book Ho Gayi!",
+                        fontWeight = FontWeight.ExtraBold,
+                        color = BalajiNavyDark,
+                        fontSize = 18.sp,
+                        textAlign = TextAlign.Center
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Surface(
+                        color = BalajiTealPrimary.copy(alpha = 0.2f),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Text(
+                            text = "Booking ID: ${b.id}",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = BalajiNavyDark,
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+                        )
+                    }
+                }
             },
             text = {
-                Column {
-                    Text(
-                        text = "Booking ID: ${b.id}\nService: ${b.serviceName}\nUnits: ${b.units} (${b.modelType})\nAddress: ${b.address}\n\nSanjay Prajapati ko WhatsApp notification bheja ja chuka hai. Hamari team aapse jald hi rabta karegi!",
-                        fontSize = 13.sp,
-                        color = BalajiTextDark,
-                        lineHeight = 18.sp
-                    )
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Card(
+                        colors = CardDefaults.cardColors(containerColor = BalajiCardLight),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(Icons.Default.Build, contentDescription = null, tint = BalajiTealPrimary, modifier = Modifier.size(16.dp))
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = "${b.serviceName} • ${b.units} Unit (${b.modelType})",
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = BalajiNavyDark
+                                )
+                            }
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(Icons.Default.Person, contentDescription = null, tint = BalajiTealPrimary, modifier = Modifier.size(16.dp))
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = "${b.customerName} (${b.customerPhone})",
+                                    fontSize = 12.sp,
+                                    color = BalajiTextDark
+                                )
+                            }
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(Icons.Default.LocationOn, contentDescription = null, tint = BalajiTealPrimary, modifier = Modifier.size(16.dp))
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = "${b.address}, ${b.area}",
+                                    fontSize = 12.sp,
+                                    color = BalajiTextDark
+                                )
+                            }
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(Icons.Default.Check, contentDescription = null, tint = BalajiGuaranteeGreen, modifier = Modifier.size(16.dp))
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = "Pay After Service • Technician: Sanjay Prajapati",
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    color = BalajiGuaranteeGreen
+                                )
+                            }
+                        }
+                    }
+
+                    // Status notification card
+                    Card(
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFFE8F5E9)),
+                        shape = RoundedCornerShape(10.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(10.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(Icons.Default.CheckCircle, contentDescription = null, tint = BalajiGuaranteeGreen, modifier = Modifier.size(20.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "Aapki appointment app me save ho chuki hai. Aap app par hi bane reh sakte hain ya direct WhatsApp par message bhej sakte hain.",
+                                fontSize = 11.sp,
+                                color = Color(0xFF1B5E20),
+                                lineHeight = 15.sp
+                            )
+                        }
+                    }
+
+                    // Direct WhatsApp Action Button
+                    Button(
+                        onClick = {
+                            val whatsappMsg = repository.formatBookingWhatsAppText(b)
+                            repository.launchWhatsApp(context, BalajiRepository.BUSINESS_PHONE, whatsappMsg)
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(46.dp)
+                            .testTag("whatsapp_booking_button"),
+                        shape = RoundedCornerShape(10.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF25D366))
+                    ) {
+                        Icon(Icons.Default.Chat, contentDescription = "WhatsApp", tint = BalajiCardWhite, modifier = Modifier.size(18.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "WhatsApp Par Details Bhejein (+91 9157896306)",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 12.sp,
+                            color = BalajiCardWhite
+                        )
+                    }
                 }
             },
             confirmButton = {
@@ -1464,18 +1601,27 @@ fun HomeScreen(
                         showBookingSuccessDialog = null
                         onNavigateToMyBookings()
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = BalajiNavyDark)
+                    colors = ButtonDefaults.buttonColors(containerColor = BalajiNavyDark),
+                    shape = RoundedCornerShape(10.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag("view_my_bookings_dialog_btn")
                 ) {
-                    Text("View My Bookings", color = BalajiCardWhite)
+                    Icon(Icons.Default.DateRange, contentDescription = null, tint = BalajiCardWhite, modifier = Modifier.size(16.dp))
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text("App Par Hi Rahe • View My Bookings", color = BalajiCardWhite, fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showBookingSuccessDialog = null }) {
-                    Text("Theek Hai", color = BalajiTextMuted)
+                TextButton(
+                    onClick = { showBookingSuccessDialog = null },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Theek Hai (App Par Bane Rahe)", color = BalajiTextMuted, fontWeight = FontWeight.SemiBold)
                 }
             },
             containerColor = BalajiCardWhite,
-            shape = RoundedCornerShape(16.dp)
+            shape = RoundedCornerShape(20.dp)
         )
     }
 

@@ -190,6 +190,26 @@ function doPost(e) {
           body.technicianName || "Sanjay Prajapati",
           new Date()
         ]);
+
+        // Send instant notification to Sanjay Prajapati
+        try {
+          var ownerEmail = "prajapatisanjay70074@gmail.com";
+          var emailSubject = "🚨 New Balaji AC Appointment: " + (body.serviceName || "Service") + " (" + bookingId + ")";
+          var emailBody = "Namaste Sanjay & Sandip Prajapati ji,\n\n" +
+                          "App se nayi appointment book hui hai:\n\n" +
+                          "• Booking ID: " + bookingId + "\n" +
+                          "• Customer Name: " + (body.customerName || "N/A") + "\n" +
+                          "• Mobile: " + (body.customerPhone || "N/A") + "\n" +
+                          "• Address: " + (body.address || "N/A") + ", " + (body.area || "") + "\n" +
+                          "• Service: " + (body.serviceName || "") + " (" + (body.units || 1) + " Unit, " + (body.modelType || "") + ")\n" +
+                          "• Problem / Notes: " + (body.issueNotes || "None") + "\n" +
+                          "• Coupon Applied: " + (body.couponCode || "None") + "\n" +
+                          "• Status: PENDING\n\n" +
+                          "Direct WhatsApp Contact: https://wa.me/91" + body.customerPhone + "\n\n" +
+                          "- Balaji Air Conditioners Automated Booking System";
+          MailApp.sendEmail(ownerEmail, emailSubject, emailBody);
+        } catch(notifyErr) {}
+
         return jsonResponse({ status: "success", bookingId: bookingId });
 
       // 3. Update Booking Status / Invoice
