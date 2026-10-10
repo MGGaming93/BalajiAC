@@ -25,10 +25,10 @@ jobs:
     - name: Setup Real Firebase Connection
       run: |
         find . -name "gradlew" -exec chmod +x {} + || true
-        # Remove dummy file
+        # Purani dummy file hatayein
         rm -f app/src/main/res/values/firebase_dummy.xml
         
-        # Create real google-services.json
+        # Sahi package name ke sath google-services.json banayein
         cat << 'EOF' > app/google-services.json
         {
           "project_info": {
@@ -41,7 +41,7 @@ jobs:
               "client_info": {
                 "mobilesdk_app_id": "1:486108461001:android:ed57d62a281d65f3b61a18",
                 "android_client_info": {
-                  "package_name": "com.aistudio.balajiacservice.baxorp"
+                  "package_name": "com.MGGaming.BalajiAc"
                 }
               },
               "oauth_client": [
@@ -49,7 +49,7 @@ jobs:
                   "client_id": "486108461001-gcd898988iujj9g7510hkd90lvmootdr.apps.googleusercontent.com",
                   "client_type": 1,
                   "android_info": {
-                    "package_name": "com.aistudio.balajiacservice.baxorp",
+                    "package_name": "com.MGGaming.BalajiAc",
                     "certificate_hash": "a94c6ba79397035a14e7e6802d1ced0a25490e09"
                   }
                 },
@@ -69,7 +69,7 @@ jobs:
         }
         EOF
         
-        # Create real web client ID
+        # Sahi web client ID banayein
         mkdir -p app/src/main/res/values
         cat << 'EOF' > app/src/main/res/values/firebase_web_client.xml
         <?xml version="1.0" encoding="utf-8"?>
