@@ -22,49 +22,6 @@ jobs:
     - name: Generate debug keystore
       run: keytool -genkey -v -keystore debug.keystore -alias androiddebugkey -storepass android -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
 
-    - name: Safely Change App Logo
-      run: |
-        if [ -f "app/logo.png" ]; then
-          echo "Generating safe Android icons..."
-          # Install photo resizer tool
-          sudo apt-get update && sudo apt-get install -y imagemagick
-          
-          # 1. Delete complex XML adaptive icons that cause crashes
-          rm -rf app/src/main/res/mipmap-anydpi-v26
-          rm -rf app/src/main/res/mipmap-anydpi-v33
-          
-          # 2. Clean old icon files
-          find app/src/main/res/mipmap-* -name "ic_launcher*.png" -delete 2>/dev/null || true
-          find app/src/main/res/mipmap-* -name "ic_launcher*.xml" -delete 2>/dev/null || true
-          
-          # 3. Create missing folders if they don't exist
-          mkdir -p app/src/main/res/mipmap-mdpi
-          mkdir -p app/src/main/res/mipmap-hdpi
-          mkdir -p app/src/main/res/mipmap-xhdpi
-          mkdir -p app/src/main/res/mipmap-xxhdpi
-          mkdir -p app/src/main/res/mipmap-xxxhdpi
-          
-          # 4. Resize logo for all screen types perfectly
-          convert app/logo.png -resize 48x48 app/src/main/res/mipmap-mdpi/ic_launcher.png
-          convert app/logo.png -resize 48x48 app/src/main/res/mipmap-mdpi/ic_launcher_round.png
-          
-          convert app/logo.png -resize 72x72 app/src/main/res/mipmap-hdpi/ic_launcher.png
-          convert app/logo.png -resize 72x72 app/src/main/res/mipmap-hdpi/ic_launcher_round.png
-          
-          convert app/logo.png -resize 96x96 app/src/main/res/mipmap-xhdpi/ic_launcher.png
-          convert app/logo.png -resize 96x96 app/src/main/res/mipmap-xhdpi/ic_launcher_round.png
-          
-          convert app/logo.png -resize 144x144 app/src/main/res/mipmap-xxhdpi/ic_launcher.png
-          convert app/logo.png -resize 144x144 app/src/main/res/mipmap-xxhdpi/ic_launcher_round.png
-          
-          convert app/logo.png -resize 192x192 app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
-          convert app/logo.png -resize 192x192 app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.png
-          
-          echo "Logo safely updated without crash!"
-        else
-          echo "logo.png not found, using default."
-        fi
-
     - name: Fix permissions
       run: find . -name "gradlew" -exec chmod +x {} + || true
 
