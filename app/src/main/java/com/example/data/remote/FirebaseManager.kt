@@ -29,7 +29,11 @@ class FirebaseManager(private val context: Context) {
     val firestore: FirebaseFirestore by lazy {
         try {
             val dbId = context.getString(R.string.firestore_database_id)
-            FirebaseFirestore.getInstance(FirebaseApp.getInstance(), dbId)
+            if (dbId.isBlank() || dbId == "(default)") {
+                FirebaseFirestore.getInstance()
+            } else {
+                FirebaseFirestore.getInstance(FirebaseApp.getInstance(), dbId)
+            }
         } catch (e: Exception) {
             Log.e("FirebaseManager", "Failed to get named firestore database", e)
             FirebaseFirestore.getInstance()
@@ -91,7 +95,15 @@ class FirebaseManager(private val context: Context) {
     ) {
         try {
             val credentialManager = CredentialManager.create(activity)
-            val serverClientId = activity.getString(R.string.default_web_client_id)
+            val serverClientId = try {
+                activity.getString(R.string.default_web_client_id)
+            } catch (e: Exception) {
+                ""
+            }
+            if (serverClientId.isBlank()) {
+                onError("Google Sign-In Web Client ID nahi mila. Kripya Phone Login (OTP) use karein.")
+                return
+            }
 
             val signInOption = GetSignInWithGoogleOption.Builder(serverClientId = serverClientId).build()
             val request = GetCredentialRequest.Builder()
