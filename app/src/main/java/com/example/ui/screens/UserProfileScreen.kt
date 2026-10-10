@@ -235,7 +235,7 @@ fun UserProfileScreen(
                             icon = Icons.Default.SupportAgent,
                             iconTint = BalajiGuaranteeGreen,
                             title = "Help & Support",
-                            subtitle = "Call or WhatsApp Sanjay & Sandip Prajapati",
+                            subtitle = "Call or WhatsApp Balaji Air Conditioners",
                             onClick = { showHelpSupportSheet = true },
                             tag = "menu_help_support"
                         )
@@ -290,7 +290,7 @@ fun UserProfileScreen(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Text(
-                    text = "Balaji Air Conditioners • Managed by Sanjay & Sandip Prajapati",
+                    text = "Balaji Air Conditioners • Cool Comfort, Always",
                     color = BalajiTextSubtle,
                     fontSize = 11.sp,
                     textAlign = TextAlign.Center,
@@ -459,7 +459,7 @@ fun UserProfileScreen(
                 }
 
                 Text(
-                    text = "Contact Sanjay Prajapati & Sandip Prajapati directly for AC and Fridge repair, emergency gas leak, or service inquiries.",
+                    text = "Contact Balaji Air Conditioners directly for AC and Fridge repair, emergency gas leak, or service inquiries.",
                     fontSize = 13.sp,
                     color = BalajiTextMuted,
                     lineHeight = 18.sp
@@ -489,7 +489,7 @@ fun UserProfileScreen(
                 // Button 2: "WhatsApp Us"
                 Button(
                     onClick = {
-                        val msg = "Namaste Sanjay bhai, mujhe Balaji Air Conditioners customer support se baat karni hai."
+                        val msg = "Namaste, mujhe Balaji Air Conditioners customer support se baat karni hai."
                         repository.launchWhatsApp(context, BalajiRepository.BUSINESS_PHONE, msg)
                     },
                     modifier = Modifier

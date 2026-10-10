@@ -233,7 +233,7 @@ fun AdminGridContent(
         AdminGridTile(
             module = AdminModule.MANAGE_REVIEWS,
             title = "Customer Reviews",
-            subtitle = "Owner Ka Jawab",
+            subtitle = "Balaji AC Replies",
             icon = Icons.Default.Star,
             badgeText = "5.0 Stars",
             iconTint = Color(0xFFFBBF24)
@@ -273,13 +273,13 @@ fun AdminGridContent(
             ) {
                 Column {
                     Text(
-                        text = "Sanjay & Sandip Prajapati",
+                        text = "Balaji Air Conditioners",
                         fontWeight = FontWeight.ExtraBold,
                         fontSize = 16.sp,
                         color = BalajiTextDark
                     )
                     Text(
-                        text = "Balaji Air Conditioners Management",
+                        text = "Admin & Operations Portal",
                         fontSize = 12.sp,
                         color = BalajiTealDeep
                     )

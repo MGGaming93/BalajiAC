@@ -387,7 +387,7 @@ fun BookingsRegisterView(repository: BalajiRepository) {
 
                         Button(
                             onClick = {
-                                val msg = "Namaste ${b.customerName} ji! Balaji Air Conditioners se Sanjay Prajapati bol raha hoon aapki booking ${b.id} ke reference me."
+                                val msg = "Namaste ${b.customerName} ji! Balaji Air Conditioners se bol rahe hain aapki booking ${b.id} ke reference me."
                                 repository.launchWhatsApp(context, "+91${b.customerPhone}", msg)
                             },
                             modifier = Modifier.weight(1f),
@@ -842,7 +842,7 @@ fun ManageReviewsView(repository: BalajiRepository) {
             .testTag("manage_reviews_view")
     ) {
         Text("Manage Customer Reviews", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = BalajiCardWhite)
-        Text("Remove fake reviews and reply as Sanjay & Sandip Prajapati", fontSize = 12.sp, color = BalajiTealSecondary)
+        Text("Manage customer reviews and reply as Balaji Air Conditioners", fontSize = 12.sp, color = BalajiTealSecondary)
 
         Spacer(modifier = Modifier.height(14.dp))
 
@@ -861,7 +861,7 @@ fun ManageReviewsView(repository: BalajiRepository) {
 
                             if (!rev.ownerReply.isNullOrBlank()) {
                                 Surface(color = Color(0xFFF1F5F9), shape = RoundedCornerShape(8.dp), modifier = Modifier.fillMaxWidth().padding(top = 4.dp)) {
-                                    Text("👨‍🔧 Reply: ${rev.ownerReply}", fontSize = 11.sp, color = BalajiNavyDark, modifier = Modifier.padding(8.dp), fontWeight = FontWeight.Medium)
+                                    Text("👨‍🔧 Balaji AC: ${rev.ownerReply}", fontSize = 11.sp, color = BalajiNavyDark, modifier = Modifier.padding(8.dp), fontWeight = FontWeight.Medium)
                                 }
                             }
                         }
@@ -888,11 +888,11 @@ fun ManageReviewsView(repository: BalajiRepository) {
     if (replyTargetReview != null) {
         val r = replyTargetReview!!
         var replyText by remember { mutableStateOf(r.ownerReply ?: "") }
-        var replyAuthor by remember { mutableStateOf(r.ownerReplyBy.ifBlank { "Sanjay Prajapati (Owner)" }) }
+        var replyAuthor by remember { mutableStateOf(r.ownerReplyBy.ifBlank { "Balaji Air Conditioners" }) }
 
         AlertDialog(
             onDismissRequest = { replyTargetReview = null },
-            title = { Text("Owner Ka Jawab (Reply to ${r.customerName})", fontWeight = FontWeight.Bold) },
+            title = { Text("Official Reply (To ${r.customerName})", fontWeight = FontWeight.Bold) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     OutlinedTextField(value = replyAuthor, onValueChange = { replyAuthor = it }, label = { Text("Replying As") }, singleLine = true, modifier = Modifier.fillMaxWidth())

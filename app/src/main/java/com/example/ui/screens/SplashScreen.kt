@@ -84,9 +84,9 @@ fun SplashScreen(
 
             Spacer(modifier = Modifier.height(48.dp))
 
-            // Founders acknowledgment
+            // Business acknowledgment
             Text(
-                text = "Managed by:\nSanjay Ghanshyam Prajapati & Sandip Prajapati",
+                text = "Balaji Air Conditioners\nCool Comfort, Always",
                 color = BalajiTextSubtle,
                 fontSize = 12.sp,
                 textAlign = TextAlign.Center,

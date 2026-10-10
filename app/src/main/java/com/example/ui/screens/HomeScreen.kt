@@ -418,7 +418,7 @@ fun HomeScreen(
 
                         Spacer(modifier = Modifier.height(18.dp))
 
-                        // Quick Call Sanjay Prajapati action
+                        // Quick Call action
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(10.dp)
@@ -438,7 +438,7 @@ fun HomeScreen(
 
                             Button(
                                 onClick = {
-                                    val msg = "Namaste Sanjay bhai, mujhe AC / Fridge service ke baare me inquiry karni hai."
+                                    val msg = "Namaste, mujhe Balaji Air Conditioners service ke baare me inquiry karni hai."
                                     repository.launchWhatsApp(context, BalajiRepository.BUSINESS_PHONE, msg)
                                 },
                                 modifier = Modifier.weight(1f),
@@ -1325,7 +1325,7 @@ fun HomeScreen(
                                 Column(modifier = Modifier.padding(10.dp)) {
                                     Row(verticalAlignment = Alignment.CenterVertically) {
                                         Text(
-                                            text = "👨‍🔧 Owner Ka Jawab (${rev.ownerReplyBy}):",
+                                            text = "👨‍🔧 Response from Balaji Air Conditioners:",
                                             fontWeight = FontWeight.Bold,
                                             fontSize = 11.sp,
                                             color = BalajiNavyDark
@@ -1375,7 +1375,7 @@ fun HomeScreen(
                     )
 
                     Text(
-                        text = "Managed by: Sanjay Ghanshyam Prajapati & Sandip Prajapati",
+                        text = "Cool Comfort, Always • Certified AC & Fridge Services",
                         fontSize = 12.sp,
                         color = BalajiTealPrimary,
                         textAlign = TextAlign.Center
@@ -1542,7 +1542,7 @@ fun HomeScreen(
                                 Icon(Icons.Default.Check, contentDescription = null, tint = BalajiGuaranteeGreen, modifier = Modifier.size(16.dp))
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Text(
-                                    text = "Pay After Service • Technician: Sanjay Prajapati",
+                                    text = "Pay After Service • Verified Technician • Balaji Air Conditioners",
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Medium,
                                     color = BalajiGuaranteeGreen
@@ -1668,7 +1668,7 @@ fun HomeScreen(
                                         comment = revComment.trim(),
                                         serviceUsed = revService,
                                         ownerReply = "Dhanyawad $revName ji! Balaji Air Conditioners par vishwas karne ke liye aabhar.",
-                                        ownerReplyBy = "Sanjay Prajapati (Owner)"
+                                        ownerReplyBy = "Balaji Air Conditioners"
                                     )
                                 )
                                 showAddReviewDialog = false

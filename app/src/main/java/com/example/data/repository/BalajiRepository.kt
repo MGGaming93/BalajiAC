@@ -198,7 +198,7 @@ class BalajiRepository(
         dao.insertReview(review)
     }
 
-    suspend fun addOwnerReply(reviewId: String, reply: String, replyBy: String = "Sanjay Prajapati (Owner)") {
+    suspend fun addOwnerReply(reviewId: String, reply: String, replyBy: String = "Balaji Air Conditioners") {
         dao.addOwnerReply(reviewId, reply, replyBy)
     }
 

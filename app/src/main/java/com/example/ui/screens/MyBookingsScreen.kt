@@ -279,7 +279,7 @@ fun BookingItemCard(
 
             Button(
                 onClick = {
-                    val msg = "Namaste Sanjay bhai, meri booking ${booking.id} (${booking.serviceName}) ke baare me update chahiye."
+                    val msg = "Namaste, meri booking ${booking.id} (${booking.serviceName}) ke baare me update chahiye."
                     repository.launchWhatsApp(context, BalajiRepository.BUSINESS_PHONE, msg)
                 },
                 modifier = Modifier.weight(1f),

@@ -607,7 +607,7 @@ fun AuthDialog(
                         value = fullName,
                         onValueChange = { fullName = it },
                         label = { Text("Customer Name *") },
-                        placeholder = { Text("e.g. Ramesh Prajapati") },
+                        placeholder = { Text("e.g. Ramesh Kumar") },
                         singleLine = true,
                         modifier = Modifier
                             .fillMaxWidth()

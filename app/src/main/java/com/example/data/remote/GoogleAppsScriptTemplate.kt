@@ -72,14 +72,14 @@ object GoogleAppsScriptTemplate {
       E: Comment (String)
       F: ServiceUsed (String)
       G: OwnerReply (String)
-      H: OwnerReplyBy (String: "Sanjay & Sandip Prajapati")
+      H: OwnerReplyBy (String: "Balaji Air Conditioners")
     =============================================================================
     """.trimIndent()
 
     val COMPLETE_APPS_SCRIPT_CODE = """
 /**
  * BALAJI AIR CONDITIONERS - GOOGLE APPS SCRIPT WEB APP API
- * Manages all CRUD operations for Sanjay & Sandip Prajapati's AC & Fridge Service.
+ * Manages all CRUD operations for Balaji Air Conditioners AC & Fridge Service.
  *
  * HOW TO DEPLOY:
  * 1. Open your Google Sheet.
@@ -276,8 +276,8 @@ function doPost(e) {
         var rRow = findRowIndexByColumn(rSheet, 1, body.id);
         if (rRow > 1) {
           rSheet.getRange(rRow, 7).setValue(body.ownerReply);
-          rSheet.getRange(rRow, 8).setValue(body.ownerReplyBy || "Sanjay & Sandip Prajapati");
-          return jsonResponse({ status: "success", message: "Owner reply posted" });
+          rSheet.getRange(rRow, 8).setValue(body.ownerReplyBy || "Balaji Air Conditioners");
+          return jsonResponse({ status: "success", message: "Official reply posted" });
         }
         return jsonResponse({ status: "error", message: "Review not found" });
 

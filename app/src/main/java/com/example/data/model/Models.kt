@@ -73,7 +73,7 @@ data class ReviewItem(
     val comment: String,
     val serviceUsed: String,
     val ownerReply: String? = null,
-    val ownerReplyBy: String = "Sanjay & Sandip Prajapati"
+    val ownerReplyBy: String = "Balaji Air Conditioners"
 )
 
 data class Invoice(

@@ -192,37 +192,37 @@ abstract class BalajiDatabase : RoomDatabase() {
             )
             dao.insertGalleryItems(defaultGallery)
 
-            // Seed Reviews with nested Owner Ka Jawab
+            // Seed Reviews with Balaji Air Conditioners reply
             val defaultReviews = listOf(
                 ReviewItem(
                     id = "rev_1",
                     customerName = "Rajesh Sharma",
                     rating = 5.0f,
                     dateText = "2 Din Pehle",
-                    comment = "Sanjay bhai ne 45 minute me AC ka jet pump chemical service kar diya. Daikin AC ekdum naye jaisa chilled hawa fenk raha hai! Bohot polite aur professional service.",
+                    comment = "Balaji AC team ne 45 minute me AC ka jet pump chemical service kar diya. Daikin AC ekdum naye jaisa chilled hawa fenk raha hai! Bohot polite aur professional service.",
                     serviceUsed = "Jet Pump Deep Chemical Service",
-                    ownerReply = "Dhanyawad Rajesh ji! Daikin AC ki cooling 100% restore ho gayi. Kisi bhi query ke liye aap direct mujhe call kar sakte hain. 30 din ki cooling guarantee active hai!",
-                    ownerReplyBy = "Sanjay Prajapati (Owner)"
+                    ownerReply = "Dhanyawad Rajesh ji! Daikin AC ki cooling 100% restore ho gayi. Kisi bhi query ke liye aap direct helpline par call kar sakte hain. 30 din ki cooling guarantee active hai!",
+                    ownerReplyBy = "Balaji Air Conditioners"
                 ),
                 ReviewItem(
                     id = "rev_2",
                     customerName = "Amit Patel",
                     rating = 5.0f,
                     dateText = "1 Week Pehle",
-                    comment = "Fridge me bilkul cooling nahi ho rahi thi, Sandip bhai ne gas refill kiya aur thermostat calibrate kar diya. Same day repair ho gaya, reasonable price!",
+                    comment = "Fridge me bilkul cooling nahi ho rahi thi, Balaji AC team ne gas refill kiya aur thermostat calibrate kar diya. Same day repair ho gaya, reasonable price!",
                     serviceUsed = "Fridge Repair & Maintenance",
                     ownerReply = "Aapka bahut aabhar Amit bhai! Hum hamesha genuine parts aur best cooling quality dene ki koshish karte hain.",
-                    ownerReplyBy = "Sandip Prajapati (Owner)"
+                    ownerReplyBy = "Balaji Air Conditioners"
                 ),
                 ReviewItem(
                     id = "rev_3",
                     customerName = "Pooja Verma",
                     rating = 5.0f,
                     dateText = "2 Weeks Pehle",
-                    comment = "Super fast service! Form submit karne ke 15 minute ke andar Sanjay ji ka call aa gaya aur afternoon me technician ne aakar gas leak fix kar diya.",
+                    comment = "Super fast service! Form submit karne ke 15 minute ke andar Balaji Air Conditioners ka call aa gaya aur afternoon me technician ne aakar gas leak fix kar diya.",
                     serviceUsed = "AC Gas Refill (R32)",
                     ownerReply = "Thank you Pooja ji for trusting Balaji Air Conditioners! 'Cool Comfort, Always' hamara promise hai.",
-                    ownerReplyBy = "Sanjay Prajapati (Owner)"
+                    ownerReplyBy = "Balaji Air Conditioners"
                 )
             )
             dao.insertReviews(defaultReviews)
@@ -230,7 +230,7 @@ abstract class BalajiDatabase : RoomDatabase() {
             // Seed Admin User
             val adminUser = User(
                 phone = "9157896306",
-                name = "Sanjay Prajapati",
+                name = "Balaji Air Conditioners",
                 address = "Balaji Air Conditioners Workshop",
                 area = "Main Road",
                 role = "ADMIN"
