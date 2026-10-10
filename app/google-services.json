@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "854149107180",
+    "project_id": "balajiac-bb1a0",
+    "storage_bucket": "balajiac-bb1a0.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:854149107180:android:8559ba527c02964b64c4c9",
+        "android_client_info": {
+          "package_name": "com.MGGaming.BalajiAc"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyARrC0jhLg6KUfn6AOtRtkAiEvINT6mbTE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
