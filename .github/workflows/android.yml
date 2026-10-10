@@ -25,10 +25,11 @@ jobs:
     - name: Setup Real Firebase Connection
       run: |
         find . -name "gradlew" -exec chmod +x {} + || true
-        # Purani dummy file hatayein
+        # Purani duplicate/dummy files ko hata dein taaki error na aaye
         rm -f app/src/main/res/values/firebase_dummy.xml
+        rm -f app/src/main/res/values/firebase_web_client.xml
         
-        # Sahi package name ke sath google-services.json banayein
+        # Sahi package name ke sath sirf google-services.json banayein
         cat << 'EOF' > app/google-services.json
         {
           "project_info": {
@@ -67,15 +68,6 @@ jobs:
           ],
           "configuration_version": "1"
         }
-        EOF
-        
-        # Sahi web client ID banayein
-        mkdir -p app/src/main/res/values
-        cat << 'EOF' > app/src/main/res/values/firebase_web_client.xml
-        <?xml version="1.0" encoding="utf-8"?>
-        <resources>
-            <string name="default_web_client_id">486108461001-ps621v0k680ofe2oqaf2v6fh9q1ej56r.apps.googleusercontent.com</string>
-        </resources>
         EOF
 
     - name: Build Debug APK
