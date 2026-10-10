@@ -22,28 +22,47 @@ jobs:
     - name: Generate debug keystore
       run: keytool -genkey -v -keystore debug.keystore -alias androiddebugkey -storepass android -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
 
-    - name: Change App Logo (Custom Overwrite)
+    - name: Safely Change App Logo
       run: |
         if [ -f "app/logo.png" ]; then
-          echo "Processing custom logo..."
+          echo "Generating safe Android icons..."
+          # Install photo resizer tool
+          sudo apt-get update && sudo apt-get install -y imagemagick
           
-          # Force overwrite of all ic_launcher png variations (round/foreground/regular)
-          for d in app/src/main/res/mipmap-*; do
-            if [ -d "$d" ]; then
-              cp app/logo.png "$d/ic_launcher.png" 2>/dev/null || true
-              cp app/logo.png "$d/ic_launcher_round.png" 2>/dev/null || true
-              cp app/logo.png "$d/ic_launcher_foreground.png" 2>/dev/null || true
-            fi
-          done
+          # 1. Delete complex XML adaptive icons that cause crashes
+          rm -rf app/src/main/res/mipmap-anydpi-v26
+          rm -rf app/src/main/res/mipmap-anydpi-v33
           
-          # Force delete of any adaptive XMLs that would override PNG images on newer Androids
-          find app/src/main/res -name "ic_launcher.xml" -delete 2>/dev/null || true
-          find app/src/main/res -name "ic_launcher_round.xml" -delete 2>/dev/null || true
-          find app/src/main/res -name "ic_launcher_foreground.xml" -delete 2>/dev/null || true
+          # 2. Clean old icon files
+          find app/src/main/res/mipmap-* -name "ic_launcher*.png" -delete 2>/dev/null || true
+          find app/src/main/res/mipmap-* -name "ic_launcher*.xml" -delete 2>/dev/null || true
           
-          echo "Custom logo override complete!"
+          # 3. Create missing folders if they don't exist
+          mkdir -p app/src/main/res/mipmap-mdpi
+          mkdir -p app/src/main/res/mipmap-hdpi
+          mkdir -p app/src/main/res/mipmap-xhdpi
+          mkdir -p app/src/main/res/mipmap-xxhdpi
+          mkdir -p app/src/main/res/mipmap-xxxhdpi
+          
+          # 4. Resize logo for all screen types perfectly
+          convert app/logo.png -resize 48x48 app/src/main/res/mipmap-mdpi/ic_launcher.png
+          convert app/logo.png -resize 48x48 app/src/main/res/mipmap-mdpi/ic_launcher_round.png
+          
+          convert app/logo.png -resize 72x72 app/src/main/res/mipmap-hdpi/ic_launcher.png
+          convert app/logo.png -resize 72x72 app/src/main/res/mipmap-hdpi/ic_launcher_round.png
+          
+          convert app/logo.png -resize 96x96 app/src/main/res/mipmap-xhdpi/ic_launcher.png
+          convert app/logo.png -resize 96x96 app/src/main/res/mipmap-xhdpi/ic_launcher_round.png
+          
+          convert app/logo.png -resize 144x144 app/src/main/res/mipmap-xxhdpi/ic_launcher.png
+          convert app/logo.png -resize 144x144 app/src/main/res/mipmap-xxhdpi/ic_launcher_round.png
+          
+          convert app/logo.png -resize 192x192 app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
+          convert app/logo.png -resize 192x192 app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.png
+          
+          echo "Logo safely updated without crash!"
         else
-          echo "Warning: No logo.png found in app/ folder, using default."
+          echo "logo.png not found, using default."
         fi
 
     - name: Fix permissions
