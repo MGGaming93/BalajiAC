@@ -356,21 +356,32 @@ fun HomeScreen(
                     Column(
                         modifier = Modifier.padding(20.dp)
                     ) {
-                        Surface(
-                            color = BalajiNavyElevated,
-                            shape = RoundedCornerShape(12.dp)
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Row(
-                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
-                                verticalAlignment = Alignment.CenterVertically
+                            Surface(
+                                color = BalajiNavyElevated,
+                                shape = RoundedCornerShape(12.dp)
                             ) {
-                                Text(
-                                    text = "⚡ 100% Guaranteed Cooling Service",
-                                    color = BalajiTealPrimary,
-                                    fontSize = 11.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = "⚡ 100% Guaranteed Cooling Service",
+                                        color = BalajiTealPrimary,
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
                             }
+
+                            BalajiLogo(
+                                size = 48.dp,
+                                showSubtext = false
+                            )
                         }
 
                         Spacer(modifier = Modifier.height(12.dp))

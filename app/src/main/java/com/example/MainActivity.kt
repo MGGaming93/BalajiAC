@@ -36,7 +36,12 @@ class MainActivity : ComponentActivity() {
 
         val database = BalajiDatabase.getDatabase(this, lifecycleScope)
         val userPreferences = UserPreferences(this)
-        val firebaseManager = com.example.data.remote.FirebaseManager(this)
+        val firebaseManager = try {
+            com.example.data.remote.FirebaseManager(this)
+        } catch (e: Exception) {
+            android.util.Log.e("MainActivity", "FirebaseManager initialization failed, continuing safely", e)
+            null
+        }
         repository = BalajiRepository(
             dao = database.balajiDao(),
             userPreferences = userPreferences,

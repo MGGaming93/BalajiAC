@@ -14,6 +14,7 @@ import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential.Companion.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL
 import com.google.firebase.FirebaseApp
 import com.google.firebase.FirebaseException
+import com.google.firebase.FirebaseOptions
 import com.google.firebase.auth.*
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
@@ -24,11 +25,23 @@ import java.util.concurrent.TimeUnit
 
 class FirebaseManager(private val context: Context) {
 
-    val auth: FirebaseAuth = FirebaseAuth.getInstance()
+    init {
+        ensureInitialized(context)
+    }
+
+    val auth: FirebaseAuth by lazy {
+        ensureInitialized(context)
+        FirebaseAuth.getInstance()
+    }
 
     val firestore: FirebaseFirestore by lazy {
         try {
-            val dbId = context.getString(R.string.firestore_database_id)
+            ensureInitialized(context)
+            val dbId = try {
+                context.getString(R.string.firestore_database_id)
+            } catch (e: Exception) {
+                "(default)"
+            }
             if (dbId.isBlank() || dbId == "(default)") {
                 FirebaseFirestore.getInstance()
             } else {
@@ -168,7 +181,12 @@ class FirebaseManager(private val context: Context) {
             optionsBuilder.setForceResendingToken(resendingToken)
         }
 
-        PhoneAuthProvider.verifyPhoneNumber(optionsBuilder.build())
+        try {
+            PhoneAuthProvider.verifyPhoneNumber(optionsBuilder.build())
+        } catch (e: Exception) {
+            Log.e("FirebaseManager", "Failed to start phone verification", e)
+            onVerificationFailed(e)
+        }
     }
 
     suspend fun verifyOtpAndSignIn(
@@ -194,6 +212,33 @@ class FirebaseManager(private val context: Context) {
         } catch (e: Exception) {
             Log.e("FirebaseManager", "signInWithPhoneCredential failed", e)
             Result.failure(e)
+        }
+    }
+
+    companion object {
+        fun ensureInitialized(context: Context): FirebaseApp? {
+            return try {
+                if (FirebaseApp.getApps(context).isNotEmpty()) {
+                    FirebaseApp.getInstance()
+                } else {
+                    try {
+                        FirebaseApp.initializeApp(context)
+                    } catch (e: Exception) {
+                        Log.w("FirebaseManager", "Default initializeApp failed, fallback to explicit options", e)
+                        val options = FirebaseOptions.Builder()
+                            .setApplicationId("1:854149107180:android:8559ba527c02964b64c4c9")
+                            .setApiKey("AIzaSyARrC0jhLg6KUfn6AOtRtkAiEvINT6mbTE")
+                            .setProjectId("balajiac-bb1a0")
+                            .setStorageBucket("balajiac-bb1a0.firebasestorage.app")
+                            .setGcmSenderId("854149107180")
+                            .build()
+                        FirebaseApp.initializeApp(context.applicationContext, options)
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("FirebaseManager", "Failed to initialize FirebaseApp", e)
+                null
+            }
         }
     }
 }

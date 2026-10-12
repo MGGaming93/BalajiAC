@@ -27,6 +27,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.repository.BalajiRepository
+import com.example.ui.components.BalajiLogo
 import com.example.ui.components.ElevatedWhiteCard
 import com.example.ui.theme.*
 
@@ -271,18 +272,27 @@ fun AdminGridContent(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Column {
-                    Text(
-                        text = "Balaji Air Conditioners",
-                        fontWeight = FontWeight.ExtraBold,
-                        fontSize = 16.sp,
-                        color = BalajiTextDark
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    BalajiLogo(
+                        size = 42.dp,
+                        showSubtext = false
                     )
-                    Text(
-                        text = "Admin & Operations Portal",
-                        fontSize = 12.sp,
-                        color = BalajiTealDeep
-                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column {
+                        Text(
+                            text = "Balaji Air Conditioners",
+                            fontWeight = FontWeight.ExtraBold,
+                            fontSize = 16.sp,
+                            color = BalajiTextDark
+                        )
+                        Text(
+                            text = "Admin & Operations Portal",
+                            fontSize = 12.sp,
+                            color = BalajiTealDeep
+                        )
+                    }
                 }
 
                 Surface(
