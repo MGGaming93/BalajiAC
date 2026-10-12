@@ -30,7 +30,6 @@ jobs:
           keytool -genkey -v -keystore ~/.android/debug.keystore -alias androiddebugkey -storepass android -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
         fi
         cp ~/.android/debug.keystore ./debug.keystore
-        # Extract SHA keys to a text file for Firebase
         keytool -list -v -keystore ~/.android/debug.keystore -alias androiddebugkey -storepass android -keypass android > sha_keys.txt
 
     - name: Safely Apply Real Logo
@@ -42,7 +41,6 @@ jobs:
           echo "Real logo found! Generating safe Android Icons..."
           sudo apt-get update && sudo apt-get install -y imagemagick
           
-          # Create all required mipmap folders
           mkdir -p app/src/main/res/mipmap-mdpi
           mkdir -p app/src/main/res/mipmap-hdpi
           mkdir -p app/src/main/res/mipmap-xhdpi
@@ -50,28 +48,24 @@ jobs:
           mkdir -p app/src/main/res/mipmap-xxxhdpi
           mkdir -p app/src/main/res/mipmap-anydpi-v26
           
-          # Resize for standard launchers
           convert app/logo.png -resize 48x48 app/src/main/res/mipmap-mdpi/ic_launcher.png
           convert app/logo.png -resize 72x72 app/src/main/res/mipmap-hdpi/ic_launcher.png
           convert app/logo.png -resize 96x96 app/src/main/res/mipmap-xhdpi/ic_launcher.png
           convert app/logo.png -resize 144x144 app/src/main/res/mipmap-xxhdpi/ic_launcher.png
           convert app/logo.png -resize 192x192 app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
           
-          # Create round versions
           cp app/src/main/res/mipmap-mdpi/ic_launcher.png app/src/main/res/mipmap-mdpi/ic_launcher_round.png
           cp app/src/main/res/mipmap-hdpi/ic_launcher.png app/src/main/res/mipmap-hdpi/ic_launcher_round.png
           cp app/src/main/res/mipmap-xhdpi/ic_launcher.png app/src/main/res/mipmap-xhdpi/ic_launcher_round.png
           cp app/src/main/res/mipmap-xxhdpi/ic_launcher.png app/src/main/res/mipmap-xxhdpi/ic_launcher_round.png
           cp app/src/main/res/mipmap-xxxhdpi/ic_launcher.png app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.png
           
-          # Create safe XML for modern Android
-          cat <<EOF > app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml
-          <?xml version="1.0" encoding="utf-8"?>
-          <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
-              <background android:drawable="@android:color/white"/>
-              <foreground android:drawable="@mipmap/ic_launcher"/>
-          </adaptive-icon>
-          EOF
+          echo '<?xml version="1.0" encoding="utf-8"?>' > app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml
+          echo '<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">' >> app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml
+          echo '    <background android:drawable="@android:color/white"/>' >> app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml
+          echo '    <foreground android:drawable="@mipmap/ic_launcher"/>' >> app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml
+          echo '</adaptive-icon>' >> app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml
+          
           cp app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml
           
           echo "Real logo applied successfully!"
