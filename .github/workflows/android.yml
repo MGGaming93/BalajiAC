@@ -1,4 +1,4 @@
-name: Build Android APK
+name: Final Public Build
 
 on:
   push:
@@ -19,40 +19,70 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
-    - name: Generate debug keystore
-      run: keytool -genkey -v -keystore debug.keystore -alias androiddebugkey -storepass android -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
-
-    - name: Fix App Icon Crash Properly
+    - name: Setup Permanent Signature (For Real OTP)
       run: |
-        echo "Cleaning all old corrupted files..."
+        mkdir -p ~/.android
+        if [ -f "app/debug.keystore" ]; then
+          echo "Using saved permanent signature..."
+          cp app/debug.keystore ~/.android/debug.keystore
+        else
+          echo "Creating new permanent signature..."
+          keytool -genkey -v -keystore ~/.android/debug.keystore -alias androiddebugkey -storepass android -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+        fi
+        cp ~/.android/debug.keystore ./debug.keystore
+        # Extract SHA keys to a text file for Firebase
+        keytool -list -v -keystore ~/.android/debug.keystore -alias androiddebugkey -storepass android -keypass android > sha_keys.txt
+
+    - name: Safely Apply Real Logo
+      run: |
+        echo "Cleaning all old icons..."
         rm -rf app/src/main/res/mipmap*/* || true
-
-        echo "Creating safe and perfect Android Icons..."
-        sudo apt-get update && sudo apt-get install -y imagemagick
-        mkdir -p app/src/main/res/mipmap-xxhdpi
-        mkdir -p app/src/main/res/mipmap-anydpi-v26
-
-        # Creating separate background and foreground files to stop the crash loop
-        convert -size 192x192 canvas:#FFFFFF app/src/main/res/mipmap-xxhdpi/ic_launcher_background.png
-        convert -size 192x192 canvas:#0D47A1 app/src/main/res/mipmap-xxhdpi/ic_launcher_foreground.png
-        convert -size 192x192 canvas:#0D47A1 app/src/main/res/mipmap-xxhdpi/ic_launcher.png
-        convert -size 192x192 canvas:#0D47A1 app/src/main/res/mipmap-xxhdpi/ic_launcher_round.png
-
-        # Creating proper XML structure
-        cat <<EOF > app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml
-        <?xml version="1.0" encoding="utf-8"?>
-        <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
-            <background android:drawable="@mipmap/ic_launcher_background"/>
-            <foreground android:drawable="@mipmap/ic_launcher_foreground"/>
-        </adaptive-icon>
-        EOF
         
-        cp app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml
+        if [ -f "app/logo.png" ]; then
+          echo "Real logo found! Generating safe Android Icons..."
+          sudo apt-get update && sudo apt-get install -y imagemagick
+          
+          # Create all required mipmap folders
+          mkdir -p app/src/main/res/mipmap-mdpi
+          mkdir -p app/src/main/res/mipmap-hdpi
+          mkdir -p app/src/main/res/mipmap-xhdpi
+          mkdir -p app/src/main/res/mipmap-xxhdpi
+          mkdir -p app/src/main/res/mipmap-xxxhdpi
+          mkdir -p app/src/main/res/mipmap-anydpi-v26
+          
+          # Resize for standard launchers
+          convert app/logo.png -resize 48x48 app/src/main/res/mipmap-mdpi/ic_launcher.png
+          convert app/logo.png -resize 72x72 app/src/main/res/mipmap-hdpi/ic_launcher.png
+          convert app/logo.png -resize 96x96 app/src/main/res/mipmap-xhdpi/ic_launcher.png
+          convert app/logo.png -resize 144x144 app/src/main/res/mipmap-xxhdpi/ic_launcher.png
+          convert app/logo.png -resize 192x192 app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
+          
+          # Create round versions
+          cp app/src/main/res/mipmap-mdpi/ic_launcher.png app/src/main/res/mipmap-mdpi/ic_launcher_round.png
+          cp app/src/main/res/mipmap-hdpi/ic_launcher.png app/src/main/res/mipmap-hdpi/ic_launcher_round.png
+          cp app/src/main/res/mipmap-xhdpi/ic_launcher.png app/src/main/res/mipmap-xhdpi/ic_launcher_round.png
+          cp app/src/main/res/mipmap-xxhdpi/ic_launcher.png app/src/main/res/mipmap-xxhdpi/ic_launcher_round.png
+          cp app/src/main/res/mipmap-xxxhdpi/ic_launcher.png app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.png
+          
+          # Create safe XML for modern Android
+          cat <<EOF > app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml
+          <?xml version="1.0" encoding="utf-8"?>
+          <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+              <background android:drawable="@android:color/white"/>
+              <foreground android:drawable="@mipmap/ic_launcher"/>
+          </adaptive-icon>
+          EOF
+          cp app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml
+          
+          echo "Real logo applied successfully!"
+        else
+          echo "No logo.png found in app folder, please upload it."
+        fi
 
     - name: Fix permissions
       run: find . -name "gradlew" -exec chmod +x {} + || true
 
-    - name: Build Debug APK
+    - name: Build Final APK
       run: |
         if [ -f "gradlew" ]; then
           ./gradlew assembleDebug
@@ -62,8 +92,17 @@ jobs:
           gradle assembleDebug
         fi
 
-    - name: Upload APK
+    - name: Upload Security Keys for Firebase
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: Balaji-Security-Keys
+        path: |
+          sha_keys.txt
+          debug.keystore
+
+    - name: Upload Final APK
       uses: actions/upload-artifact@v4
       with:
-        name: Balaji-AC-App
+        name: Balaji-AC-App-Public
         path: '**/*.apk'
