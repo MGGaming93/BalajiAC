@@ -19,64 +19,15 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
-    - name: Setup Permanent Signature
+    - name: Setup Keystore
       run: |
         mkdir -p ~/.android
         if [ -f "app/debug.keystore" ]; then
-          echo "Using permanent debug.keystore from app folder..."
           cp app/debug.keystore ~/.android/debug.keystore
         elif [ -f "debug.keystore" ]; then
-          echo "Using permanent debug.keystore from root folder..."
           cp debug.keystore ~/.android/debug.keystore
         else
-          echo "Generating permanent keystore..."
           keytool -genkey -v -keystore ~/.android/debug.keystore -alias androiddebugkey -storepass android -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
-        fi
-        cp ~/.android/debug.keystore ./debug.keystore
-        keytool -list -v -keystore ~/.android/debug.keystore -alias androiddebugkey -storepass android -keypass android > sha_keys.txt
-
-    - name: Force Apply App Logo
-      run: |
-        sudo apt-get update && sudo apt-get install -y imagemagick
-        
-        # Locate logo file anywhere in repo
-        LOGO_FILE=$(find . -maxdepth 3 -type f \( -iname "logo.png" -o -iname "logo.jpg" -o -iname "logo.jpeg" \) | head -n 1)
-        
-        if [ -n "$LOGO_FILE" ]; then
-          echo "Found logo at: $LOGO_FILE"
-          
-          rm -rf app/src/main/res/mipmap*/* || true
-          
-          mkdir -p app/src/main/res/mipmap-mdpi
-          mkdir -p app/src/main/res/mipmap-hdpi
-          mkdir -p app/src/main/res/mipmap-xhdpi
-          mkdir -p app/src/main/res/mipmap-xxhdpi
-          mkdir -p app/src/main/res/mipmap-xxxhdpi
-          mkdir -p app/src/main/res/mipmap-anydpi-v26
-
-          convert "$LOGO_FILE" -resize 48x48 app/src/main/res/mipmap-mdpi/ic_launcher.png
-          convert "$LOGO_FILE" -resize 72x72 app/src/main/res/mipmap-hdpi/ic_launcher.png
-          convert "$LOGO_FILE" -resize 96x96 app/src/main/res/mipmap-xhdpi/ic_launcher.png
-          convert "$LOGO_FILE" -resize 144x144 app/src/main/res/mipmap-xxhdpi/ic_launcher.png
-          convert "$LOGO_FILE" -resize 192x192 app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
-
-          cp app/src/main/res/mipmap-mdpi/ic_launcher.png app/src/main/res/mipmap-mdpi/ic_launcher_round.png
-          cp app/src/main/res/mipmap-hdpi/ic_launcher.png app/src/main/res/mipmap-hdpi/ic_launcher_round.png
-          cp app/src/main/res/mipmap-xhdpi/ic_launcher.png app/src/main/res/mipmap-xhdpi/ic_launcher_round.png
-          cp app/src/main/res/mipmap-xxhdpi/ic_launcher.png app/src/main/res/mipmap-xxhdpi/ic_launcher_round.png
-          cp app/src/main/res/mipmap-xxxhdpi/ic_launcher.png app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.png
-
-          echo '<?xml version="1.0" encoding="utf-8"?>' > app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml
-          echo '<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">' >> app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml
-          echo '    <background android:drawable="@android:color/white"/>' >> app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml
-          echo '    <foreground android:drawable="@mipmap/ic_launcher"/>' >> app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml
-          echo '</adaptive-icon>' >> app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml
-
-          cp app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml
-          echo "Logo generation completed successfully."
-        else
-          echo "ERROR: No logo file found in repository."
-          exit 1
         fi
 
     - name: Fix permissions
@@ -91,15 +42,6 @@ jobs:
         else
           gradle assembleDebug
         fi
-
-    - name: Upload Security Keys
-      uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: Balaji-Security-Keys
-        path: |
-          sha_keys.txt
-          debug.keystore
 
     - name: Upload Public APK
       uses: actions/upload-artifact@v4
