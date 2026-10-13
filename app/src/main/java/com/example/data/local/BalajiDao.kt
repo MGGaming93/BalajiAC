@@ -39,6 +39,15 @@ interface BalajiDao {
     @Update
     suspend fun updateBooking(booking: Booking)
 
+    @Query("SELECT * FROM bookings WHERE id = :id LIMIT 1")
+    suspend fun getBookingById(id: String): Booking?
+
+    @Query("SELECT * FROM bookings WHERE customerPhone = :phone")
+    suspend fun getBookingsListForPhone(phone: String): List<Booking>
+
+    @Query("SELECT COUNT(*) FROM bookings")
+    suspend fun getBookingCount(): Int
+
     @Query("UPDATE bookings SET status = :status WHERE id = :id")
     suspend fun updateBookingStatus(id: String, status: String)
 
@@ -48,6 +57,9 @@ interface BalajiDao {
     // Users
     @Query("SELECT * FROM users ORDER BY createdAt DESC")
     fun getAllUsers(): Flow<List<User>>
+
+    @Query("SELECT COUNT(*) FROM users")
+    suspend fun getUserCount(): Int
 
     @Query("SELECT * FROM users WHERE phone = :phone LIMIT 1")
     suspend fun getUserByPhone(phone: String): User?

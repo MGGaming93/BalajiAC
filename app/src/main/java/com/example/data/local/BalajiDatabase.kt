@@ -19,7 +19,7 @@ import kotlinx.coroutines.launch
         GalleryItem::class,
         ReviewItem::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 abstract class BalajiDatabase : RoomDatabase() {
@@ -36,6 +36,7 @@ abstract class BalajiDatabase : RoomDatabase() {
                     BalajiDatabase::class.java,
                     "balaji_air_conditioners.db"
                 )
+                .fallbackToDestructiveMigration()
                 .addCallback(DatabaseCallback(scope))
                 .build()
                 INSTANCE = instance
@@ -239,7 +240,8 @@ abstract class BalajiDatabase : RoomDatabase() {
                 name = "Balaji Air Conditioners",
                 address = "Balaji Air Conditioners Workshop",
                 area = "Main Road",
-                role = "ADMIN"
+                role = "ADMIN",
+                callNumber = "WA-001"
             )
             dao.insertUser(adminUser)
         }

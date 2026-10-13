@@ -70,11 +70,13 @@ fun AuthDialog(
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var infoMessage by remember { mutableStateOf<String?>(null) }
     var isLoading by remember { mutableStateOf(false) }
+    var callNumber by remember { mutableStateOf("WA-001") }
 
-    fun buildWhatsAppVerificationMessage(): String {
+    fun buildWhatsAppVerificationMessage(callNo: String = callNumber): String {
         return buildString {
             appendLine("❄️ *Balaji Air Conditioners - Customer Verification*")
             appendLine("━━━━━━━━━━━━━━━━━━━━━")
+            appendLine("🎫 *Call / Customer No:* $callNo")
             appendLine("📱 *Customer Mobile:* +91 $phoneNumber")
             appendLine("━━━━━━━━━━━━━━━━━━━━━")
             appendLine("Hello Balaji Air Conditioners! Main Balaji AC app par account verify aur login karna chahta hu.")
@@ -93,17 +95,21 @@ fun AuthDialog(
         infoMessage = null
         isLoading = true
 
-        try {
-            val messageText = buildWhatsAppVerificationMessage()
-            repository.launchWhatsApp(context, BalajiRepository.BUSINESS_PHONE, messageText)
-            infoMessage = "WhatsApp verification message open ho gaya hai"
-        } catch (e: Exception) {
-            Log.e("AuthDialog", "Failed to launch WhatsApp", e)
-            infoMessage = "WhatsApp verification proceed kiya ja raha hai"
-        }
+        coroutineScope.launch {
+            val assignedCallNo = repository.getOrGenerateCallNumber(phoneNumber)
+            callNumber = assignedCallNo
+            try {
+                val messageText = buildWhatsAppVerificationMessage(assignedCallNo)
+                repository.launchWhatsApp(context, BalajiRepository.BUSINESS_PHONE, messageText)
+                infoMessage = "WhatsApp verification message open ho gaya hai"
+            } catch (e: Exception) {
+                Log.e("AuthDialog", "Failed to launch WhatsApp", e)
+                infoMessage = "WhatsApp verification proceed kiya ja raha hai"
+            }
 
-        isLoading = false
-        step = AuthStep.WHATSAPP_VERIFICATION
+            isLoading = false
+            step = AuthStep.WHATSAPP_VERIFICATION
+        }
     }
 
     Dialog(onDismissRequest = onDismiss) {
@@ -430,6 +436,21 @@ fun AuthDialog(
                                 color = BalajiTextDark
                             )
 
+                            Spacer(modifier = Modifier.height(6.dp))
+
+                            Surface(
+                                color = WhatsAppBrandGreen.copy(alpha = 0.15f),
+                                shape = RoundedCornerShape(8.dp)
+                            ) {
+                                Text(
+                                    text = "🎫 Call / Customer No: $callNumber",
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = WhatsAppDarkGreen,
+                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+                                )
+                            }
+
                             Spacer(modifier = Modifier.height(8.dp))
 
                             Text(
@@ -469,7 +490,8 @@ fun AuthDialog(
                                         phone = existingUser.phone,
                                         name = existingUser.name,
                                         address = existingUser.address,
-                                        area = existingUser.area
+                                        area = existingUser.area,
+                                        callNumber = existingUser.callNumber
                                     )
                                     onAuthSuccess(existingUser.phone, existingUser.name)
                                 } else {
@@ -635,7 +657,8 @@ fun AuthDialog(
                                         phone = phoneNumber,
                                         name = fullName.trim(),
                                         address = address.trim(),
-                                        area = area.trim()
+                                        area = area.trim(),
+                                        callNumber = callNumber
                                     )
                                     // Also sync user to Firestore
                                     repository.firebaseManager?.syncUserToFirestore(newUser)

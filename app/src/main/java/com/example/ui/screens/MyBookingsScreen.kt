@@ -153,12 +153,18 @@ fun BookingItemCard(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = booking.id,
-                fontWeight = FontWeight.ExtraBold,
-                fontSize = 15.sp,
-                color = BalajiNavyDark
-            )
+            Surface(
+                color = BalajiTealPrimary.copy(alpha = 0.2f),
+                shape = RoundedCornerShape(6.dp)
+            ) {
+                Text(
+                    text = "Call No: ${booking.callNumber}",
+                    fontWeight = FontWeight.ExtraBold,
+                    fontSize = 13.sp,
+                    color = BalajiNavyDark,
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                )
+            }
 
             Surface(
                 color = statusBg,
@@ -279,7 +285,7 @@ fun BookingItemCard(
 
             Button(
                 onClick = {
-                    val msg = "Namaste, meri booking ${booking.id} (${booking.serviceName}) ke baare me update chahiye."
+                    val msg = "Namaste, meri call ${booking.callNumber} (${booking.serviceName}) ke baare me update chahiye."
                     repository.launchWhatsApp(context, BalajiRepository.BUSINESS_PHONE, msg)
                 },
                 modifier = Modifier.weight(1f),

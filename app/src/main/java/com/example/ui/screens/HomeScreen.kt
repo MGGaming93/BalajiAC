@@ -1113,7 +1113,7 @@ fun HomeScreen(
                                         // User stays on app! Booking is saved in local DB, Google Sheets and Firebase.
                                         isBookingSubmitting = false
                                         showBookingSuccessDialog = newBooking
-                                        Toast.makeText(context, "🎉 Appointment Book Ho Gayi! ID: ${newBooking.id}", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(context, "🎉 Appointment Book Ho Gayi! Call No: ${newBooking.callNumber}", Toast.LENGTH_SHORT).show()
 
                                         // Reset fields
                                         issueNotes = ""
@@ -1522,7 +1522,7 @@ fun HomeScreen(
                         shape = RoundedCornerShape(8.dp)
                     ) {
                         Text(
-                            text = "Booking ID: ${b.id}",
+                            text = "Call No: ${b.callNumber}",
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
                             color = BalajiNavyDark,

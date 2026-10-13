@@ -171,7 +171,7 @@ function doPost(e) {
       // 2. Add Booking
       case "addBooking":
         var bookingsSheet = ss.getSheetByName("Bookings");
-        var bookingId = "BK-" + Math.floor(100000 + Math.random() * 900000);
+        var bookingId = body.bookingId || body.callNumber || "WA-001";
         bookingsSheet.appendRow([
           bookingId,
           body.customerName || "",

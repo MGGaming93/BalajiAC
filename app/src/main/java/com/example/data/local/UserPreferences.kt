@@ -25,23 +25,32 @@ class UserPreferences(context: Context) {
     private val _currentUserArea = MutableStateFlow(prefs.getString("user_area", ""))
     val currentUserArea: StateFlow<String?> = _currentUserArea.asStateFlow()
 
+    private val _currentUserCallNumber = MutableStateFlow(prefs.getString("user_call_number", "WA-001"))
+    val currentUserCallNumber: StateFlow<String?> = _currentUserCallNumber.asStateFlow()
+
     private val _appsScriptUrl = MutableStateFlow(
         prefs.getString("apps_script_url", "") ?: ""
     )
     val appsScriptUrl: StateFlow<String> = _appsScriptUrl.asStateFlow()
 
-    fun saveUserSession(phone: String, name: String, address: String = "", area: String = "") {
+    fun saveUserSession(phone: String, name: String, address: String = "", area: String = "", callNumber: String = "WA-001") {
         prefs.edit()
             .putString("user_phone", phone)
             .putString("user_name", name)
             .putString("user_address", address)
             .putString("user_area", area)
+            .putString("user_call_number", callNumber)
             .apply()
         _isLoggedIn.value = true
         _currentUserPhone.value = phone
         _currentUserName.value = name
         _currentUserAddress.value = address
         _currentUserArea.value = area
+        _currentUserCallNumber.value = callNumber
+    }
+
+    fun getCurrentCallNumber(): String {
+        return prefs.getString("user_call_number", null) ?: "WA-001"
     }
 
     fun clearSession() {
@@ -50,12 +59,14 @@ class UserPreferences(context: Context) {
             .remove("user_name")
             .remove("user_address")
             .remove("user_area")
+            .remove("user_call_number")
             .apply()
         _isLoggedIn.value = false
         _currentUserPhone.value = null
         _currentUserName.value = null
         _currentUserAddress.value = null
         _currentUserArea.value = null
+        _currentUserCallNumber.value = null
     }
 
     fun saveAppsScriptUrl(url: String) {

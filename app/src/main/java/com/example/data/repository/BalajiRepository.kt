@@ -50,6 +50,30 @@ class BalajiRepository(
         return dao.getBookingsForPhone(phone)
     }
 
+    suspend fun getOrGenerateCallNumber(phone: String?): String {
+        if (!phone.isNullOrBlank()) {
+            val clean = phone.filter { it.isDigit() }.takeLast(10)
+            val existingUser = dao.getUserByPhone(clean)
+            if (existingUser != null && existingUser.callNumber.isNotBlank()) {
+                return existingUser.callNumber
+            }
+            val existingBookings = dao.getBookingsListForPhone(clean)
+            if (existingBookings.isNotEmpty()) {
+                val first = existingBookings.firstOrNull { it.callNumber.isNotBlank() }
+                if (first != null) return first.callNumber
+            }
+            val prefPhone = userPreferences.currentUserPhone.value
+            if (prefPhone == clean) {
+                val prefCall = userPreferences.getCurrentCallNumber()
+                if (prefCall.isNotBlank()) return prefCall
+            }
+        }
+        val userCount = dao.getUserCount()
+        val bookingCount = dao.getBookingCount()
+        val nextIdx = maxOf(userCount, bookingCount) + 1
+        return String.format("WA-%03d", nextIdx)
+    }
+
     suspend fun createBooking(
         customerName: String,
         customerPhone: String,
@@ -62,7 +86,14 @@ class BalajiRepository(
         couponCode: String,
         discountAmount: Int
     ): Booking {
-        val bookingId = "BK-" + (100000 + (Math.random() * 900000).toInt())
+        val callNumber = getOrGenerateCallNumber(customerPhone)
+        val cleanPhone = customerPhone.filter { it.isDigit() }.takeLast(10)
+        val existingWithCallNo = dao.getBookingsListForPhone(cleanPhone)
+        val bookingId = if (existingWithCallNo.isEmpty()) {
+            callNumber
+        } else {
+            "$callNumber-${existingWithCallNo.size + 1}"
+        }
         val booking = Booking(
             id = bookingId,
             customerName = customerName,
@@ -75,7 +106,8 @@ class BalajiRepository(
             issueNotes = issueNotes,
             couponCode = couponCode,
             discountAmount = discountAmount,
-            status = "PENDING"
+            status = "PENDING",
+            callNumber = callNumber
         )
         dao.insertBooking(booking)
 
@@ -94,7 +126,8 @@ class BalajiRepository(
                     modelType = modelType,
                     issueNotes = issueNotes,
                     couponCode = couponCode,
-                    discountAmount = discountAmount
+                    discountAmount = discountAmount,
+                    bookingId = booking.id
                 )
             } catch (_: Exception) {}
         }
@@ -147,22 +180,30 @@ class BalajiRepository(
         phone: String,
         name: String,
         address: String = "",
-        area: String = ""
+        area: String = "",
+        callNumber: String? = null
     ): User {
+        val cleanPhone = phone.filter { it.isDigit() }.takeLast(10)
+        val finalCallNumber = if (!callNumber.isNullOrBlank()) {
+            callNumber
+        } else {
+            getOrGenerateCallNumber(cleanPhone)
+        }
         val user = User(
-            phone = phone,
+            phone = cleanPhone,
             name = name,
             address = address,
             area = area,
-            role = if (phone == "9157896306") "ADMIN" else "CUSTOMER"
+            role = if (cleanPhone == "9157896306") "ADMIN" else "CUSTOMER",
+            callNumber = finalCallNumber
         )
         dao.insertUser(user)
-        userPreferences.saveUserSession(phone, name, address, area)
+        userPreferences.saveUserSession(cleanPhone, name, address, area, finalCallNumber)
 
         val url = userPreferences.getAppsScriptUrl()
         if (url.isNotBlank()) {
             try {
-                sheetsClient.syncUserToSheet(url, phone, name, address, area)
+                sheetsClient.syncUserToSheet(url, cleanPhone, name, address, area)
             } catch (_: Exception) {}
         }
         // Sync with Firebase Firestore
@@ -220,16 +261,16 @@ class BalajiRepository(
     // WhatsApp Helpers
     fun formatBookingWhatsAppText(booking: Booking): String {
         return buildString {
-            appendLine("❄️ *BALAJI AIR CONDITIONERS - NEW BOOKING* ❄️")
+            appendLine("❄️ *BALAJI AIR CONDITIONERS - SERVICE CALL* ❄️")
             appendLine("━━━━━━━━━━━━━━━━━━━━━")
-            appendLine("📌 *Booking ID:* ${booking.id}")
+            appendLine("📌 *Call No:* ${booking.callNumber}")
+            appendLine("🛠️ *Service Selected:* ${booking.serviceName}")
             appendLine("👤 *Customer Name:* ${booking.customerName}")
             appendLine("📞 *Contact Number:* ${booking.customerPhone}")
             appendLine("🏠 *Service Address:* ${booking.address}")
             if (booking.area.isNotBlank()) {
                 appendLine("📍 *Area / Landmark:* ${booking.area}")
             }
-            appendLine("🛠️ *Service Selected:* ${booking.serviceName}")
             appendLine("🔢 *Units:* ${booking.units} | *Type:* ${booking.modelType}")
             if (booking.issueNotes.isNotBlank()) {
                 appendLine("📝 *Issue / Problem:* ${booking.issueNotes}")

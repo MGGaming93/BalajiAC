@@ -80,12 +80,14 @@ class GoogleSheetsApiClient {
         modelType: String,
         issueNotes: String,
         couponCode: String,
-        discountAmount: Int
+        discountAmount: Int,
+        bookingId: String = ""
     ): Result<String> = withContext(Dispatchers.IO) {
         if (webAppUrl.isBlank()) return@withContext Result.success("LOCAL_ONLY")
         try {
             val payload = JSONObject().apply {
                 put("action", "addBooking")
+                if (bookingId.isNotBlank()) put("bookingId", bookingId)
                 put("customerName", customerName)
                 put("customerPhone", customerPhone)
                 put("address", address)

@@ -51,6 +51,7 @@ fun UserProfileScreen(
     val currentName by repository.userPreferences.currentUserName.collectAsState()
     val currentAddress by repository.userPreferences.currentUserAddress.collectAsState()
     val currentArea by repository.userPreferences.currentUserArea.collectAsState()
+    val currentCallNumber by repository.userPreferences.currentUserCallNumber.collectAsState()
 
     val activeOffers by repository.activeOffers.collectAsState(initial = emptyList())
 
@@ -159,6 +160,21 @@ fun UserProfileScreen(
                                     fontSize = 13.sp,
                                     fontWeight = FontWeight.SemiBold,
                                     color = BalajiTealDeep
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(4.dp))
+
+                            Surface(
+                                color = BalajiTealPrimary.copy(alpha = 0.15f),
+                                shape = RoundedCornerShape(6.dp)
+                            ) {
+                                Text(
+                                    text = "🎫 Call No: ${currentCallNumber ?: "WA-001"}",
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = BalajiTealDeep,
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
                                 )
                             }
 
