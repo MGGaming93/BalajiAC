@@ -10,7 +10,7 @@ data class User(
     val address: String = "",
     val area: String = "",
     val role: String = "CUSTOMER", // "CUSTOMER", "ADMIN"
-    val callNumber: String = "WA-001", // e.g. WA-001
+    val callNumber: String = "WA-001", // Login / Signup Customer No: WA-001
     val createdAt: Long = System.currentTimeMillis()
 )
 
@@ -42,7 +42,7 @@ data class Booking(
     val sparePartsCharge: Int = 0,
     val status: String = "PENDING", // "PENDING", "TECHNICIAN_ASSIGNED", "IN_PROGRESS", "COMPLETED", "CANCELLED"
     val technicianName: String = "Sanjay Prajapati",
-    val callNumber: String = "WA-001", // e.g. WA-001
+    val callNumber: String = "BAC-001", // e.g. BAC-001
     val createdAt: Long = System.currentTimeMillis()
 )
 

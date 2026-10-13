@@ -299,7 +299,7 @@ fun UserManagementView(repository: BalajiRepository) {
                                 }
                             }
                             Spacer(modifier = Modifier.height(2.dp))
-                            Text("🎫 Call No: ${user.callNumber} • 📞 +91 ${user.phone}", fontSize = 13.sp, color = BalajiTealDeep, fontWeight = FontWeight.SemiBold)
+                            Text("🎫 Customer No: ${user.callNumber} • 📞 +91 ${user.phone}", fontSize = 13.sp, color = BalajiTealDeep, fontWeight = FontWeight.SemiBold)
                             if (user.address.isNotBlank()) {
                                 Text("🏠 ${user.address}, ${user.area}", fontSize = 12.sp, color = BalajiTextMuted)
                             }
@@ -393,7 +393,7 @@ fun BookingsRegisterView(repository: BalajiRepository) {
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("Call No: ${b.callNumber}", fontWeight = FontWeight.ExtraBold, fontSize = 14.sp, color = BalajiNavyDark)
+                        Text("Service Reg No: ${b.callNumber}", fontWeight = FontWeight.ExtraBold, fontSize = 14.sp, color = BalajiNavyDark)
                         Surface(
                             color = if (b.status == "COMPLETED") Color(0xFFD1FAE5) else Color(0xFFFEF3C7),
                             shape = RoundedCornerShape(8.dp)
@@ -620,7 +620,7 @@ fun DigitalBillingView(repository: BalajiRepository) {
                         Toast.makeText(context, "Kripya customer phone number enter karein", Toast.LENGTH_SHORT).show()
                     } else {
                         coroutineScope.launch {
-                            val directCallNo = repository.getOrGenerateCallNumber(custPhone)
+                            val directCallNo = repository.getOrGenerateBookingCallNumber(custPhone)
                             val dummyBooking = selectedBooking ?: Booking(
                                 id = directCallNo,
                                 customerName = custName.ifBlank { "Customer" },

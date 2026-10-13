@@ -170,7 +170,7 @@ fun UserProfileScreen(
                                 shape = RoundedCornerShape(6.dp)
                             ) {
                                 Text(
-                                    text = "🎫 Call No: ${currentCallNumber ?: "WA-001"}",
+                                    text = "🎫 Customer No: ${currentCallNumber ?: "WA-001"}",
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = BalajiTealDeep,

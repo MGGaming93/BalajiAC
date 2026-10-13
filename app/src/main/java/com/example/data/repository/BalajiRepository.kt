@@ -50,28 +50,30 @@ class BalajiRepository(
         return dao.getBookingsForPhone(phone)
     }
 
-    suspend fun getOrGenerateCallNumber(phone: String?): String {
+    suspend fun getOrGenerateUserCallNumber(phone: String?): String {
         if (!phone.isNullOrBlank()) {
             val clean = phone.filter { it.isDigit() }.takeLast(10)
             val existingUser = dao.getUserByPhone(clean)
-            if (existingUser != null && existingUser.callNumber.isNotBlank()) {
+            if (existingUser != null && existingUser.callNumber.isNotBlank() && existingUser.callNumber.startsWith("WA-")) {
                 return existingUser.callNumber
-            }
-            val existingBookings = dao.getBookingsListForPhone(clean)
-            if (existingBookings.isNotEmpty()) {
-                val first = existingBookings.firstOrNull { it.callNumber.isNotBlank() }
-                if (first != null) return first.callNumber
             }
             val prefPhone = userPreferences.currentUserPhone.value
             if (prefPhone == clean) {
                 val prefCall = userPreferences.getCurrentCallNumber()
-                if (prefCall.isNotBlank()) return prefCall
+                if (prefCall.isNotBlank() && prefCall.startsWith("WA-")) return prefCall
             }
         }
         val userCount = dao.getUserCount()
+        return String.format("WA-%03d", userCount + 1)
+    }
+
+    suspend fun getOrGenerateBookingCallNumber(phone: String?): String {
         val bookingCount = dao.getBookingCount()
-        val nextIdx = maxOf(userCount, bookingCount) + 1
-        return String.format("WA-%03d", nextIdx)
+        return String.format("BAC-%03d", bookingCount + 1)
+    }
+
+    suspend fun getOrGenerateCallNumber(phone: String?): String {
+        return getOrGenerateUserCallNumber(phone)
     }
 
     suspend fun createBooking(
@@ -86,7 +88,7 @@ class BalajiRepository(
         couponCode: String,
         discountAmount: Int
     ): Booking {
-        val callNumber = getOrGenerateCallNumber(customerPhone)
+        val callNumber = getOrGenerateBookingCallNumber(customerPhone)
         val cleanPhone = customerPhone.filter { it.isDigit() }.takeLast(10)
         val existingWithCallNo = dao.getBookingsListForPhone(cleanPhone)
         val bookingId = if (existingWithCallNo.isEmpty()) {
@@ -261,9 +263,9 @@ class BalajiRepository(
     // WhatsApp Helpers
     fun formatBookingWhatsAppText(booking: Booking): String {
         return buildString {
-            appendLine("❄️ *BALAJI AIR CONDITIONERS - SERVICE CALL* ❄️")
+            appendLine("❄️ *BALAJI AIR CONDITIONERS - SERVICE REGISTRATION* ❄️")
             appendLine("━━━━━━━━━━━━━━━━━━━━━")
-            appendLine("📌 *Call No:* ${booking.callNumber}")
+            appendLine("📌 *Service Registration No:* ${booking.callNumber}")
             appendLine("🛠️ *Service Selected:* ${booking.serviceName}")
             appendLine("👤 *Customer Name:* ${booking.customerName}")
             appendLine("📞 *Contact Number:* ${booking.customerPhone}")

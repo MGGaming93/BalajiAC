@@ -76,7 +76,7 @@ fun AuthDialog(
         return buildString {
             appendLine("❄️ *Balaji Air Conditioners - Customer Verification*")
             appendLine("━━━━━━━━━━━━━━━━━━━━━")
-            appendLine("🎫 *Call / Customer No:* $callNo")
+            appendLine("🎫 *Login / Verification No:* $callNo")
             appendLine("📱 *Customer Mobile:* +91 $phoneNumber")
             appendLine("━━━━━━━━━━━━━━━━━━━━━")
             appendLine("Hello Balaji Air Conditioners! Main Balaji AC app par account verify aur login karna chahta hu.")
@@ -96,7 +96,7 @@ fun AuthDialog(
         isLoading = true
 
         coroutineScope.launch {
-            val assignedCallNo = repository.getOrGenerateCallNumber(phoneNumber)
+            val assignedCallNo = repository.getOrGenerateUserCallNumber(phoneNumber)
             callNumber = assignedCallNo
             try {
                 val messageText = buildWhatsAppVerificationMessage(assignedCallNo)
@@ -443,7 +443,7 @@ fun AuthDialog(
                                 shape = RoundedCornerShape(8.dp)
                             ) {
                                 Text(
-                                    text = "🎫 Call / Customer No: $callNumber",
+                                    text = "🎫 Login / Customer No: $callNumber",
                                     fontSize = 13.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = WhatsAppDarkGreen,

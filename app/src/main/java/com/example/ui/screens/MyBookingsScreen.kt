@@ -158,7 +158,7 @@ fun BookingItemCard(
                 shape = RoundedCornerShape(6.dp)
             ) {
                 Text(
-                    text = "Call No: ${booking.callNumber}",
+                    text = "Reg No: ${booking.callNumber}",
                     fontWeight = FontWeight.ExtraBold,
                     fontSize = 13.sp,
                     color = BalajiNavyDark,
@@ -285,7 +285,7 @@ fun BookingItemCard(
 
             Button(
                 onClick = {
-                    val msg = "Namaste, meri call ${booking.callNumber} (${booking.serviceName}) ke baare me update chahiye."
+                    val msg = "Namaste, meri service registration ${booking.callNumber} (${booking.serviceName}) ke baare me update chahiye."
                     repository.launchWhatsApp(context, BalajiRepository.BUSINESS_PHONE, msg)
                 },
                 modifier = Modifier.weight(1f),
