@@ -19,16 +19,14 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
-    - name: Setup Keystore
+    - name: Ensure Debug Keystore
       run: |
         mkdir -p ~/.android
-        if [ -f "app/debug.keystore" ]; then
-          cp app/debug.keystore ~/.android/debug.keystore
-        elif [ -f "debug.keystore" ]; then
-          cp debug.keystore ~/.android/debug.keystore
-        else
-          keytool -genkey -v -keystore ~/.android/debug.keystore -alias androiddebugkey -storepass android -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
-        fi
+        keytool -genkey -v -keystore ~/.android/debug.keystore -alias androiddebugkey -storepass android -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+        # Project root aur app folder dono jagah copy karein taaki gradle ko mil jaye
+        cp ~/.android/debug.keystore ./debug.keystore
+        mkdir -p app
+        cp ~/.android/debug.keystore ./app/debug.keystore
 
     - name: Fix permissions
       run: find . -name "gradlew" -exec chmod +x {} + || true
