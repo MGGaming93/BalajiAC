@@ -3,26 +3,37 @@ package com.example.ui.screens.admin
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.net.Uri
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.example.data.model.*
 import com.example.data.remote.GoogleAppsScriptTemplate
 import com.example.data.remote.GoogleSheetsApiClient
@@ -30,6 +41,63 @@ import com.example.data.repository.BalajiRepository
 import com.example.ui.components.ElevatedWhiteCard
 import com.example.ui.theme.*
 import kotlinx.coroutines.launch
+
+// -------------------------------------------------------------
+// REUSABLE BLACK-TEXT INPUT FOR ALL ADMIN PORTAL FORMS
+// Fixes issue where typed text was hard to see / white in dark theme
+// -------------------------------------------------------------
+@Composable
+fun AdminOutlinedTextField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    label: @Composable (() -> Unit)? = null,
+    placeholder: @Composable (() -> Unit)? = null,
+    singleLine: Boolean = false,
+    maxLines: Int = if (singleLine) 1 else 4,
+    readOnly: Boolean = false,
+    leadingIcon: @Composable (() -> Unit)? = null,
+    trailingIcon: @Composable (() -> Unit)? = null,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    isError: Boolean = false
+) {
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        modifier = modifier,
+        label = label,
+        placeholder = placeholder,
+        singleLine = singleLine,
+        maxLines = maxLines,
+        readOnly = readOnly,
+        leadingIcon = leadingIcon,
+        trailingIcon = trailingIcon,
+        keyboardOptions = keyboardOptions,
+        isError = isError,
+        textStyle = LocalTextStyle.current.copy(
+            color = Color.Black,
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Medium
+        ),
+        shape = RoundedCornerShape(10.dp),
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedTextColor = Color.Black,
+            unfocusedTextColor = Color.Black,
+            focusedContainerColor = Color.White,
+            unfocusedContainerColor = Color.White,
+            disabledContainerColor = Color(0xFFF8FAFC),
+            cursorColor = Color.Black,
+            focusedLabelColor = BalajiTealDeep,
+            unfocusedLabelColor = Color(0xFF475569),
+            focusedPlaceholderColor = Color(0xFF94A3B8),
+            unfocusedPlaceholderColor = Color(0xFF94A3B8),
+            focusedBorderColor = BalajiTealDeep,
+            unfocusedBorderColor = Color(0xFFCBD5E1),
+            errorTextColor = BalajiEmergencyRed,
+            errorBorderColor = BalajiEmergencyRed
+        )
+    )
+}
 
 // -------------------------------------------------------------
 // 1. MANAGE SERVICES (Service Catalog CRUD)
@@ -136,12 +204,12 @@ fun ManageServicesView(repository: BalajiRepository) {
                 showAddDialog = false
                 editingService = null
             },
-            title = { Text(if (s == null) "Add New Service" else "Edit Service", fontWeight = FontWeight.Bold) },
+            title = { Text(if (s == null) "Add New Service" else "Edit Service", fontWeight = FontWeight.Bold, color = BalajiTextDark) },
             text = {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    OutlinedTextField(value = name, onValueChange = { name = it }, label = { Text("Service Name") }, singleLine = true, modifier = Modifier.fillMaxWidth())
-                    OutlinedTextField(value = time, onValueChange = { time = it }, label = { Text("Estimated Time (e.g. 45 Min)") }, singleLine = true, modifier = Modifier.fillMaxWidth())
-                    OutlinedTextField(value = desc, onValueChange = { desc = it }, label = { Text("Technician Notes / Description") }, maxLines = 3, modifier = Modifier.fillMaxWidth())
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    AdminOutlinedTextField(value = name, onValueChange = { name = it }, label = { Text("Service Name") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+                    AdminOutlinedTextField(value = time, onValueChange = { time = it }, label = { Text("Estimated Time (e.g. 45 Min)") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+                    AdminOutlinedTextField(value = desc, onValueChange = { desc = it }, label = { Text("Technician Notes / Description") }, maxLines = 3, modifier = Modifier.fillMaxWidth())
                 }
             },
             confirmButton = {
@@ -182,7 +250,7 @@ fun ManageServicesView(repository: BalajiRepository) {
                     showAddDialog = false
                     editingService = null
                 }) {
-                    Text("Cancel")
+                    Text("Cancel", color = BalajiTextMuted)
                 }
             },
             containerColor = BalajiCardWhite
@@ -275,7 +343,7 @@ fun BookingsRegisterView(repository: BalajiRepository) {
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
     val bookings by repository.allBookings.collectAsState(initial = emptyList())
-    var selectedFilter by remember { mutableStateOf("ALL") } // "ALL", "PENDING", "COMPLETED"
+    var selectedFilter by remember { mutableStateOf("ALL") }
 
     val filteredList = remember(selectedFilter, bookings) {
         when (selectedFilter) {
@@ -350,7 +418,6 @@ fun BookingsRegisterView(repository: BalajiRepository) {
 
                     Spacer(modifier = Modifier.height(10.dp))
 
-                    // Status Actions
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -441,20 +508,18 @@ fun DigitalBillingView(repository: BalajiRepository) {
             Text("Select Booking / Customer", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = BalajiTextDark)
             Spacer(modifier = Modifier.height(6.dp))
 
-            // Quick Select from active bookings
             var bookingDropdownExpanded by remember { mutableStateOf(false) }
             Box(modifier = Modifier.fillMaxWidth()) {
-                OutlinedTextField(
+                AdminOutlinedTextField(
                     value = if (selectedBooking != null) "${selectedBooking?.id} - ${selectedBooking?.customerName}" else "Select a booking or enter details below",
                     onValueChange = {},
                     readOnly = true,
                     trailingIcon = {
                         IconButton(onClick = { bookingDropdownExpanded = true }) {
-                            Icon(Icons.Default.ArrowDropDown, contentDescription = "Select")
+                            Icon(Icons.Default.ArrowDropDown, contentDescription = "Select", tint = Color.Black)
                         }
                     },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(10.dp)
+                    modifier = Modifier.fillMaxWidth()
                 )
                 DropdownMenu(
                     expanded = bookingDropdownExpanded,
@@ -462,7 +527,7 @@ fun DigitalBillingView(repository: BalajiRepository) {
                 ) {
                     bookings.forEach { b ->
                         DropdownMenuItem(
-                            text = { Text("${b.id} • ${b.customerName} (${b.serviceName})") },
+                            text = { Text("${b.id} • ${b.customerName} (${b.serviceName})", color = Color.Black) },
                             onClick = {
                                 selectedBooking = b
                                 custName = b.customerName
@@ -478,51 +543,54 @@ fun DigitalBillingView(repository: BalajiRepository) {
             Spacer(modifier = Modifier.height(12.dp))
 
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                OutlinedTextField(
+                AdminOutlinedTextField(
                     value = custName,
                     onValueChange = { custName = it },
                     label = { Text("Customer Name") },
                     modifier = Modifier.weight(1f),
                     singleLine = true
                 )
-                OutlinedTextField(
+                AdminOutlinedTextField(
                     value = custPhone,
                     onValueChange = { custPhone = it },
                     label = { Text("Customer Phone") },
                     modifier = Modifier.weight(1f),
-                    singleLine = true
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Phone)
                 )
             }
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Charges Input
-            OutlinedTextField(
+            AdminOutlinedTextField(
                 value = serviceCharge,
                 onValueChange = { serviceCharge = it },
                 label = { Text("Service / Labor Charge (₹)") },
                 modifier = Modifier.fillMaxWidth(),
-                singleLine = true
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number)
             )
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            OutlinedTextField(
+            AdminOutlinedTextField(
                 value = spareParts,
                 onValueChange = { spareParts = it },
                 label = { Text("Spare Parts Charge (₹)") },
                 modifier = Modifier.fillMaxWidth(),
-                singleLine = true
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number)
             )
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            OutlinedTextField(
+            AdminOutlinedTextField(
                 value = discountAmount,
                 onValueChange = { discountAmount = it },
                 label = { Text("Discount Amount (₹)") },
                 modifier = Modifier.fillMaxWidth(),
-                singleLine = true
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number)
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -567,7 +635,6 @@ fun DigitalBillingView(repository: BalajiRepository) {
 
                             repository.completeBookingWithInvoice(dummyBooking.id, s, p, d)
 
-                            // Launch WhatsApp directly with formatted invoice
                             val invoiceText = repository.formatInvoiceWhatsAppText(dummyBooking, s, p, d)
                             repository.launchWhatsApp(context, "+91$custPhone", invoiceText)
                             Toast.makeText(context, "Invoice sent to WhatsApp!", Toast.LENGTH_SHORT).show()
@@ -667,14 +734,14 @@ fun SpecialDiscountsView(repository: BalajiRepository) {
 
         AlertDialog(
             onDismissRequest = { showAddDialog = false },
-            title = { Text("Create Promo Code", fontWeight = FontWeight.Bold) },
+            title = { Text("Create Promo Code", fontWeight = FontWeight.Bold, color = BalajiTextDark) },
             text = {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    OutlinedTextField(value = code, onValueChange = { code = it.uppercase() }, label = { Text("Coupon Code (e.g. MONSOON20)") }, singleLine = true, modifier = Modifier.fillMaxWidth())
-                    OutlinedTextField(value = title, onValueChange = { title = it }, label = { Text("Offer Title") }, singleLine = true, modifier = Modifier.fillMaxWidth())
-                    OutlinedTextField(value = percent, onValueChange = { percent = it }, label = { Text("Discount %") }, singleLine = true, modifier = Modifier.fillMaxWidth())
-                    OutlinedTextField(value = maxDisc, onValueChange = { maxDisc = it }, label = { Text("Max Discount Amount (₹)") }, singleLine = true, modifier = Modifier.fillMaxWidth())
-                    OutlinedTextField(value = desc, onValueChange = { desc = it }, label = { Text("Description / Terms") }, maxLines = 2, modifier = Modifier.fillMaxWidth())
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    AdminOutlinedTextField(value = code, onValueChange = { code = it.uppercase() }, label = { Text("Coupon Code (e.g. MONSOON20)") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+                    AdminOutlinedTextField(value = title, onValueChange = { title = it }, label = { Text("Offer Title") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+                    AdminOutlinedTextField(value = percent, onValueChange = { percent = it }, label = { Text("Discount %") }, singleLine = true, modifier = Modifier.fillMaxWidth(), keyboardOptions = KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number))
+                    AdminOutlinedTextField(value = maxDisc, onValueChange = { maxDisc = it }, label = { Text("Max Discount Amount (₹)") }, singleLine = true, modifier = Modifier.fillMaxWidth(), keyboardOptions = KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number))
+                    AdminOutlinedTextField(value = desc, onValueChange = { desc = it }, label = { Text("Description / Terms") }, maxLines = 2, modifier = Modifier.fillMaxWidth())
                 }
             },
             confirmButton = {
@@ -703,7 +770,7 @@ fun SpecialDiscountsView(repository: BalajiRepository) {
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showAddDialog = false }) { Text("Cancel") }
+                TextButton(onClick = { showAddDialog = false }) { Text("Cancel", color = BalajiTextMuted) }
             },
             containerColor = BalajiCardWhite
         )
@@ -711,7 +778,7 @@ fun SpecialDiscountsView(repository: BalajiRepository) {
 }
 
 // -------------------------------------------------------------
-// 6. MANAGE GALLERY (Photos CRUD)
+// 6. MANAGE GALLERY (Photos CRUD with Photo Picker & Preview)
 // -------------------------------------------------------------
 @Composable
 fun ManageGalleryView(repository: BalajiRepository) {
@@ -733,7 +800,7 @@ fun ManageGalleryView(repository: BalajiRepository) {
         ) {
             Column {
                 Text("Manage Work Gallery", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = BalajiCardWhite)
-                Text("Showcase AC & Fridge repair before/after", fontSize = 12.sp, color = BalajiTealSecondary)
+                Text("Showcase AC & Fridge repair photos before/after", fontSize = 12.sp, color = BalajiTealSecondary)
             }
             Button(
                 onClick = { showAddDialog = true },
@@ -748,27 +815,73 @@ fun ManageGalleryView(repository: BalajiRepository) {
 
         Spacer(modifier = Modifier.height(14.dp))
 
-        LazyColumn(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            items(items, key = { it.id }) { item ->
-                ElevatedWhiteCard {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(item.title, fontWeight = FontWeight.Bold, fontSize = 15.sp, color = BalajiTextDark)
-                            Text("Category: ${item.category} • ${item.tag}", fontSize = 12.sp, color = BalajiOrangeFlame, fontWeight = FontWeight.SemiBold)
-                            Text(item.description, fontSize = 12.sp, color = BalajiTextMuted)
-                        }
-
-                        IconButton(onClick = {
-                            coroutineScope.launch {
-                                repository.deleteGalleryItem(item.id)
-                                Toast.makeText(context, "Item deleted", Toast.LENGTH_SHORT).show()
+        if (items.isEmpty()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(32.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text("No gallery photos yet. Tap 'Add Photo' to upload one!", color = BalajiTextMuted, fontSize = 14.sp)
+            }
+        } else {
+            LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                items(items, key = { it.id }) { item ->
+                    ElevatedWhiteCard {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            // Work Photo Thumbnail
+                            if (item.imageUrl.isNotBlank()) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(76.dp)
+                                        .clip(RoundedCornerShape(10.dp))
+                                        .background(Color(0xFFF1F5F9))
+                                ) {
+                                    AsyncImage(
+                                        model = item.imageUrl,
+                                        contentDescription = item.title,
+                                        contentScale = ContentScale.Crop,
+                                        modifier = Modifier.fillMaxSize()
+                                    )
+                                }
+                                Spacer(modifier = Modifier.width(12.dp))
+                            } else {
+                                Box(
+                                    modifier = Modifier
+                                        .size(76.dp)
+                                        .clip(RoundedCornerShape(10.dp))
+                                        .background(BalajiNavyElevated),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Handyman,
+                                        contentDescription = "Work Item",
+                                        tint = BalajiTealPrimary,
+                                        modifier = Modifier.size(32.dp)
+                                    )
+                                }
+                                Spacer(modifier = Modifier.width(12.dp))
                             }
-                        }) {
-                            Icon(Icons.Default.Delete, contentDescription = "Delete", tint = BalajiEmergencyRed)
+
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(item.title, fontWeight = FontWeight.Bold, fontSize = 15.sp, color = BalajiTextDark)
+                                Spacer(modifier = Modifier.height(2.dp))
+                                Text("Category: ${item.category} • ${item.tag}", fontSize = 12.sp, color = BalajiOrangeFlame, fontWeight = FontWeight.SemiBold)
+                                Spacer(modifier = Modifier.height(2.dp))
+                                Text(item.description, fontSize = 12.sp, color = BalajiTextMuted, maxLines = 2)
+                            }
+
+                            IconButton(onClick = {
+                                coroutineScope.launch {
+                                    repository.deleteGalleryItem(item.id)
+                                    Toast.makeText(context, "Item deleted", Toast.LENGTH_SHORT).show()
+                                }
+                            }) {
+                                Icon(Icons.Default.Delete, contentDescription = "Delete", tint = BalajiEmergencyRed)
+                            }
                         }
                     }
                 }
@@ -781,16 +894,173 @@ fun ManageGalleryView(repository: BalajiRepository) {
         var category by remember { mutableStateOf("AC Jet Wash") }
         var desc by remember { mutableStateOf("") }
         var tag by remember { mutableStateOf("Before & After") }
+        var imageUrl by remember { mutableStateOf("") }
+
+        // Android Photo Picker Launcher (Zero-permission)
+        val photoPickerLauncher = rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.PickVisualMedia(),
+            onResult = { uri: Uri? ->
+                if (uri != null) {
+                    imageUrl = uri.toString()
+                }
+            }
+        )
+
+        val categories = listOf("AC Jet Wash", "Installation", "Fridge Repair", "Gas Charging", "PCB & Compressor", "Chemical Cleaning")
+        val samplePhotoPresets = listOf(
+            "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=800" to "AC Indoor Wash",
+            "https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=800" to "Outdoor Coil",
+            "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=800" to "Fridge Compressor",
+            "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=800" to "Gas Manifold"
+        )
 
         AlertDialog(
             onDismissRequest = { showAddDialog = false },
-            title = { Text("Add Gallery Work", fontWeight = FontWeight.Bold) },
+            title = {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.AddPhotoAlternate, contentDescription = null, tint = BalajiTealDeep)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Add Gallery Work & Photo", fontWeight = FontWeight.Bold, color = BalajiTextDark)
+                }
+            },
             text = {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    OutlinedTextField(value = title, onValueChange = { title = it }, label = { Text("Title") }, singleLine = true, modifier = Modifier.fillMaxWidth())
-                    OutlinedTextField(value = category, onValueChange = { category = it }, label = { Text("Category (AC Jet Wash / Fridge / etc)") }, singleLine = true, modifier = Modifier.fillMaxWidth())
-                    OutlinedTextField(value = desc, onValueChange = { desc = it }, label = { Text("Work Details") }, maxLines = 2, modifier = Modifier.fillMaxWidth())
-                    OutlinedTextField(value = tag, onValueChange = { tag = it }, label = { Text("Tag (e.g. Verified / Before & After)") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+                LazyColumn(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    item {
+                        // PHOTO SELECTION SECTION
+                        Text("1. Select Work Photo *", fontWeight = FontWeight.Bold, fontSize = 13.sp, color = BalajiTextDark)
+                        Spacer(modifier = Modifier.height(4.dp))
+
+                        // Device Photo Picker Button
+                        Button(
+                            onClick = {
+                                photoPickerLauncher.launch(
+                                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                                )
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(containerColor = BalajiNavyDark),
+                            shape = RoundedCornerShape(10.dp)
+                        ) {
+                            Icon(Icons.Default.PhotoLibrary, contentDescription = null, tint = BalajiCardWhite)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Choose Photo from Phone / Gallery", color = BalajiCardWhite, fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
+                        }
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        // Photo Preview if chosen
+                        if (imageUrl.isNotBlank()) {
+                            Card(
+                                shape = RoundedCornerShape(12.dp),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(140.dp),
+                                colors = CardDefaults.cardColors(containerColor = Color(0xFFF1F5F9))
+                            ) {
+                                Box(modifier = Modifier.fillMaxSize()) {
+                                    AsyncImage(
+                                        model = imageUrl,
+                                        contentDescription = "Selected Photo",
+                                        contentScale = ContentScale.Crop,
+                                        modifier = Modifier.fillMaxSize()
+                                    )
+                                    IconButton(
+                                        onClick = { imageUrl = "" },
+                                        modifier = Modifier
+                                            .align(Alignment.TopEnd)
+                                            .padding(4.dp)
+                                            .background(Color.Black.copy(alpha = 0.6f), CircleShape)
+                                            .size(28.dp)
+                                    ) {
+                                        Icon(Icons.Default.Close, contentDescription = "Remove", tint = Color.White, modifier = Modifier.size(16.dp))
+                                    }
+                                }
+                            }
+                        } else {
+                            // Quick Preset Photo Buttons
+                            Text("Or Pick Sample AC Photo:", fontSize = 11.sp, color = BalajiTextMuted)
+                            Spacer(modifier = Modifier.height(4.dp))
+                            LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                items(samplePhotoPresets) { (url, label) ->
+                                    FilterChip(
+                                        selected = imageUrl == url,
+                                        onClick = { imageUrl = url },
+                                        label = { Text(label, fontSize = 11.sp) },
+                                        colors = FilterChipDefaults.filterChipColors(
+                                            selectedContainerColor = BalajiTealPrimary,
+                                            selectedLabelColor = BalajiNavyDark,
+                                            containerColor = Color(0xFFF1F5F9),
+                                            labelColor = Color.Black
+                                        )
+                                    )
+                                }
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(6.dp))
+                        AdminOutlinedTextField(
+                            value = imageUrl,
+                            onValueChange = { imageUrl = it },
+                            label = { Text("Photo URL (Optional / Direct Link)") },
+                            placeholder = { Text("https://example.com/photo.jpg or file uri") },
+                            singleLine = true,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+
+                    item {
+                        Text("2. Work Details", fontWeight = FontWeight.Bold, fontSize = 13.sp, color = BalajiTextDark)
+                        Spacer(modifier = Modifier.height(4.dp))
+                        AdminOutlinedTextField(
+                            value = title,
+                            onValueChange = { title = it },
+                            label = { Text("Work Title (e.g. Split AC Chemical Foam Wash)") },
+                            singleLine = true,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+
+                    item {
+                        Text("Category:", fontSize = 12.sp, color = BalajiTextDark, fontWeight = FontWeight.SemiBold)
+                        LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                            items(categories) { cat ->
+                                FilterChip(
+                                    selected = category == cat,
+                                    onClick = { category = cat },
+                                    label = { Text(cat, fontSize = 11.sp) },
+                                    colors = FilterChipDefaults.filterChipColors(
+                                        selectedContainerColor = BalajiTealPrimary,
+                                        selectedLabelColor = BalajiNavyDark,
+                                        containerColor = Color(0xFFF1F5F9),
+                                        labelColor = Color.Black
+                                    )
+                                )
+                            }
+                        }
+                    }
+
+                    item {
+                        AdminOutlinedTextField(
+                            value = desc,
+                            onValueChange = { desc = it },
+                            label = { Text("Work Details / Technician Notes") },
+                            maxLines = 2,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+
+                    item {
+                        AdminOutlinedTextField(
+                            value = tag,
+                            onValueChange = { tag = it },
+                            label = { Text("Tag (e.g. Before & After / Verified Work)") },
+                            singleLine = true,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
                 }
             },
             confirmButton = {
@@ -803,22 +1073,25 @@ fun ManageGalleryView(repository: BalajiRepository) {
                                         id = "gal_${System.currentTimeMillis()}",
                                         title = title.trim(),
                                         category = category.trim(),
-                                        description = desc.trim(),
-                                        tag = tag.trim()
+                                        description = desc.trim().ifBlank { "Professional service completed with 100% satisfaction." },
+                                        imageUrl = imageUrl.trim(),
+                                        tag = tag.trim().ifBlank { "Verified Work" }
                                     )
                                 )
                                 showAddDialog = false
-                                Toast.makeText(context, "Work photo added!", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, "Work photo added to Gallery!", Toast.LENGTH_SHORT).show()
                             }
+                        } else {
+                            Toast.makeText(context, "Kripya work title enter karein", Toast.LENGTH_SHORT).show()
                         }
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = BalajiNavyDark)
                 ) {
-                    Text("Add", color = BalajiCardWhite)
+                    Text("Add to Gallery", color = BalajiCardWhite, fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showAddDialog = false }) { Text("Cancel") }
+                TextButton(onClick = { showAddDialog = false }) { Text("Cancel", color = BalajiTextMuted) }
             },
             containerColor = BalajiCardWhite
         )
@@ -892,11 +1165,11 @@ fun ManageReviewsView(repository: BalajiRepository) {
 
         AlertDialog(
             onDismissRequest = { replyTargetReview = null },
-            title = { Text("Official Reply (To ${r.customerName})", fontWeight = FontWeight.Bold) },
+            title = { Text("Official Reply (To ${r.customerName})", fontWeight = FontWeight.Bold, color = BalajiTextDark) },
             text = {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    OutlinedTextField(value = replyAuthor, onValueChange = { replyAuthor = it }, label = { Text("Replying As") }, singleLine = true, modifier = Modifier.fillMaxWidth())
-                    OutlinedTextField(value = replyText, onValueChange = { replyText = it }, label = { Text("Your Reply Message") }, maxLines = 3, modifier = Modifier.fillMaxWidth())
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    AdminOutlinedTextField(value = replyAuthor, onValueChange = { replyAuthor = it }, label = { Text("Replying As") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+                    AdminOutlinedTextField(value = replyText, onValueChange = { replyText = it }, label = { Text("Your Reply Message") }, maxLines = 3, modifier = Modifier.fillMaxWidth())
                 }
             },
             confirmButton = {
@@ -914,7 +1187,7 @@ fun ManageReviewsView(repository: BalajiRepository) {
                 }
             },
             dismissButton = {
-                TextButton(onClick = { replyTargetReview = null }) { Text("Cancel") }
+                TextButton(onClick = { replyTargetReview = null }) { Text("Cancel", color = BalajiTextMuted) }
             },
             containerColor = BalajiCardWhite
         )
@@ -944,13 +1217,13 @@ fun PushNotificationsView(repository: BalajiRepository) {
         ElevatedWhiteCard {
             Text("Notification Title", fontWeight = FontWeight.Bold, fontSize = 13.sp, color = BalajiTextDark)
             Spacer(modifier = Modifier.height(4.dp))
-            OutlinedTextField(value = title, onValueChange = { title = it }, singleLine = true, modifier = Modifier.fillMaxWidth())
+            AdminOutlinedTextField(value = title, onValueChange = { title = it }, singleLine = true, modifier = Modifier.fillMaxWidth())
 
             Spacer(modifier = Modifier.height(12.dp))
 
             Text("Message Content", fontWeight = FontWeight.Bold, fontSize = 13.sp, color = BalajiTextDark)
             Spacer(modifier = Modifier.height(4.dp))
-            OutlinedTextField(value = message, onValueChange = { message = it }, maxLines = 4, modifier = Modifier.fillMaxWidth())
+            AdminOutlinedTextField(value = message, onValueChange = { message = it }, maxLines = 4, modifier = Modifier.fillMaxWidth())
 
             Spacer(modifier = Modifier.height(18.dp))
 
@@ -998,7 +1271,7 @@ fun GoogleSheetsSetupView(repository: BalajiRepository) {
         ElevatedWhiteCard {
             Text("Apps Script Web App URL", fontWeight = FontWeight.Bold, fontSize = 13.sp, color = BalajiTextDark)
             Spacer(modifier = Modifier.height(4.dp))
-            OutlinedTextField(
+            AdminOutlinedTextField(
                 value = inputUrl,
                 onValueChange = { inputUrl = it },
                 placeholder = { Text("https://script.google.com/macros/s/.../exec") },

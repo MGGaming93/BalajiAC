@@ -4,7 +4,6 @@ import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
 import android.util.Log
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -63,8 +62,6 @@ fun AuthDialog(
     var step by remember { mutableStateOf(AuthStep.ENTER_PHONE) }
 
     var phoneNumber by remember { mutableStateOf("") }
-    var verificationCode by remember { mutableStateOf("WA-1099") }
-    var isWhatsAppLaunched by remember { mutableStateOf(false) }
 
     // Profile completion fields
     var fullName by remember { mutableStateOf("") }
@@ -74,19 +71,19 @@ fun AuthDialog(
     var infoMessage by remember { mutableStateOf<String?>(null) }
     var isLoading by remember { mutableStateOf(false) }
 
-    fun buildWhatsAppMessage(code: String): String {
+    fun buildWhatsAppVerificationMessage(): String {
         return buildString {
-            appendLine("❄️ *Balaji Air Conditioners - Login Verification*")
+            appendLine("❄️ *Balaji Air Conditioners - Customer Verification*")
             appendLine("━━━━━━━━━━━━━━━━━━━━━")
-            appendLine("📱 *Customer Phone:* +91 $phoneNumber")
-            appendLine("🔐 *Verification Code:* $code")
+            appendLine("📱 *Customer Mobile:* +91 $phoneNumber")
             appendLine("━━━━━━━━━━━━━━━━━━━━━")
-            appendLine("Please verify my account for booking and customer services.")
+            appendLine("Hello Balaji Air Conditioners! Main Balaji AC app par account verify aur login karna chahta hu.")
+            appendLine("Kripya mera WhatsApp account verify karein.")
         }
     }
 
-    // Function to trigger WhatsApp verification
-    fun startWhatsAppVerification() {
+    // Function to initiate direct WhatsApp Verification
+    fun initiateWhatsAppVerification() {
         if (phoneNumber.length != 10) {
             errorMessage = "Kripya 10-digit ka valid mobile number dalein"
             return
@@ -96,16 +93,13 @@ fun AuthDialog(
         infoMessage = null
         isLoading = true
 
-        val code = "WA-" + (1000 + (Math.random() * 9000).toInt())
-        verificationCode = code
-
         try {
-            val messageText = buildWhatsAppMessage(code)
+            val messageText = buildWhatsAppVerificationMessage()
             repository.launchWhatsApp(context, BalajiRepository.BUSINESS_PHONE, messageText)
-            isWhatsAppLaunched = true
             infoMessage = "WhatsApp verification message open ho gaya hai"
         } catch (e: Exception) {
-            Log.e("AuthDialog", "Failed to open WhatsApp", e)
+            Log.e("AuthDialog", "Failed to launch WhatsApp", e)
+            infoMessage = "WhatsApp verification proceed kiya ja raha hai"
         }
 
         isLoading = false
@@ -187,7 +181,9 @@ fun AuthDialog(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
+                // ==========================================
                 // STEP 1: Enter Phone Number
+                // ==========================================
                 if (step == AuthStep.ENTER_PHONE) {
                     Text(
                         text = "Apna 10-digit mobile number enter karein. WhatsApp verification se bina kisi OTP ke turant login karein.",
@@ -201,23 +197,47 @@ fun AuthDialog(
 
                     OutlinedTextField(
                         value = phoneNumber,
-                        onValueChange = {
-                            if (it.length <= 10 && it.all { char -> char.isDigit() }) {
-                                phoneNumber = it
-                                errorMessage = null
+                        onValueChange = { input ->
+                            val digitsOnly = input.filter { it.isDigit() }.take(10)
+                            phoneNumber = digitsOnly
+                            if (errorMessage != null) errorMessage = null
+                        },
+                        label = { Text("Mobile Number (10 Digits)") },
+                        placeholder = { Text("9876543210") },
+                        leadingIcon = {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.padding(start = 12.dp, end = 6.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Phone,
+                                    contentDescription = null,
+                                    tint = WhatsAppDarkGreen,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    "+91",
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 14.sp,
+                                    color = BalajiTextDark
+                                )
                             }
                         },
-                        leadingIcon = {
-                            Text(
-                                "+91 ",
-                                fontWeight = FontWeight.Bold,
-                                color = BalajiTextDark,
-                                modifier = Modifier.padding(start = 12.dp)
-                            )
+                        trailingIcon = {
+                            if (phoneNumber.isNotEmpty()) {
+                                IconButton(onClick = { phoneNumber = "" }) {
+                                    Icon(
+                                        imageVector = Icons.Default.Clear,
+                                        contentDescription = "Clear",
+                                        tint = BalajiTextMuted,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                }
+                            }
                         },
-                        placeholder = { Text("Mobile Number (e.g. 9157896306)", color = BalajiTextMuted) },
-                        singleLine = true,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+                        singleLine = true,
                         modifier = Modifier
                             .fillMaxWidth()
                             .testTag("auth_phone_input"),
@@ -241,12 +261,12 @@ fun AuthDialog(
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(20.dp))
+                    Spacer(modifier = Modifier.height(18.dp))
 
-                    // Primary Button: WhatsApp Verification
+                    // Primary Button: Verify via WhatsApp
                     Button(
                         onClick = {
-                            startWhatsAppVerification()
+                            initiateWhatsAppVerification()
                         },
                         modifier = Modifier
                             .fillMaxWidth()
@@ -265,7 +285,7 @@ fun AuthDialog(
                                     Icons.Default.Chat,
                                     contentDescription = "WhatsApp",
                                     tint = BalajiCardWhite,
-                                    modifier = Modifier.size(18.dp)
+                                    modifier = Modifier.size(20.dp)
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
@@ -350,10 +370,12 @@ fun AuthDialog(
                     }
                 }
 
-                // STEP 2: WhatsApp Verification Status & Quick Confirm
+                // ==========================================
+                // STEP 2: Direct WhatsApp Verification (NO OTP REQUIRED)
+                // ==========================================
                 if (step == AuthStep.WHATSAPP_VERIFICATION) {
                     Text(
-                        text = "Aapka number +91 $phoneNumber WhatsApp par verify ho raha hai.",
+                        text = "WhatsApp verification message initiate ho gaya hai for: +91 $phoneNumber",
                         fontSize = 13.sp,
                         color = BalajiTextMuted,
                         textAlign = TextAlign.Start,
@@ -362,6 +384,7 @@ fun AuthDialog(
 
                     Spacer(modifier = Modifier.height(14.dp))
 
+                    // WhatsApp Status Card
                     Card(
                         shape = RoundedCornerShape(16.dp),
                         colors = CardDefaults.cardColors(containerColor = WhatsAppLightBg),
@@ -371,47 +394,48 @@ fun AuthDialog(
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(14.dp),
+                                .padding(16.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Box(
                                 modifier = Modifier
-                                    .size(46.dp)
+                                    .size(48.dp)
                                     .clip(CircleShape)
                                     .background(WhatsAppDarkGreen),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
-                                    imageVector = Icons.Default.CheckCircle,
-                                    contentDescription = "WhatsApp Verified",
+                                    imageVector = Icons.Default.Verified,
+                                    contentDescription = "Verified",
                                     tint = BalajiCardWhite,
-                                    modifier = Modifier.size(24.dp)
+                                    modifier = Modifier.size(26.dp)
                                 )
                             }
 
-                            Spacer(modifier = Modifier.height(8.dp))
+                            Spacer(modifier = Modifier.height(10.dp))
 
                             Text(
-                                text = "WhatsApp Verification Code",
-                                fontSize = 12.sp,
-                                color = WhatsAppDarkGreen,
-                                fontWeight = FontWeight.SemiBold
-                            )
-
-                            Text(
-                                text = verificationCode,
-                                fontSize = 20.sp,
-                                fontWeight = FontWeight.ExtraBold,
-                                color = WhatsAppDarkGreen,
-                                letterSpacing = 2.sp
+                                text = "WhatsApp Verification Active",
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = WhatsAppDarkGreen
                             )
 
                             Spacer(modifier = Modifier.height(4.dp))
 
                             Text(
-                                text = "Balaji Air Conditioners WhatsApp (+91 9157896306) par verification message link kiya gaya hai.",
-                                fontSize = 11.sp,
-                                color = Color(0xFF2E7D32),
+                                text = "+91 $phoneNumber",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.ExtraBold,
+                                color = BalajiTextDark
+                            )
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            Text(
+                                text = "Bina kisi OTP ke direct login: Balaji WhatsApp par message bhej kar neeche diye button par click karein.",
+                                fontSize = 12.sp,
+                                color = BalajiTextMuted,
                                 textAlign = TextAlign.Center
                             )
                         }
@@ -428,9 +452,9 @@ fun AuthDialog(
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(18.dp))
 
-                    // Primary Button: Confirm & Proceed
+                    // Primary Button: Confirm & Complete Login
                     Button(
                         onClick = {
                             errorMessage = null
@@ -469,7 +493,7 @@ fun AuthDialog(
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Icon(Icons.Default.Verified, contentDescription = null, tint = BalajiCardWhite, modifier = Modifier.size(18.dp))
                                 Spacer(modifier = Modifier.width(8.dp))
-                                Text("Confirm & Continue Login", fontWeight = FontWeight.Bold, color = BalajiCardWhite)
+                                Text("Confirm & Complete Login", fontWeight = FontWeight.Bold, color = BalajiCardWhite)
                             }
                         }
                     }
@@ -479,7 +503,7 @@ fun AuthDialog(
                     // Re-open WhatsApp if needed
                     OutlinedButton(
                         onClick = {
-                            val msg = buildWhatsAppMessage(verificationCode)
+                            val msg = buildWhatsAppVerificationMessage()
                             repository.launchWhatsApp(context, BalajiRepository.BUSINESS_PHONE, msg)
                         },
                         modifier = Modifier
@@ -492,27 +516,29 @@ fun AuthDialog(
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(Icons.Default.Chat, contentDescription = null, tint = WhatsAppDarkGreen, modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(6.dp))
-                            Text("Open WhatsApp Again", color = WhatsAppDarkGreen, fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
+                            Text("Re-open WhatsApp Chat", color = WhatsAppDarkGreen, fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
 
-                    Text(
-                        text = "Change Mobile Number",
-                        color = BalajiTextMuted,
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Medium,
-                        modifier = Modifier
-                            .clickable {
-                                step = AuthStep.ENTER_PHONE
-                                isWhatsAppLaunched = false
-                            }
-                            .padding(4.dp)
-                    )
+                    TextButton(
+                        onClick = {
+                            step = AuthStep.ENTER_PHONE
+                        }
+                    ) {
+                        Text(
+                            text = "Change Mobile Number",
+                            color = BalajiTealDeep,
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
                 }
 
+                // ==========================================
                 // STEP 3: Complete Profile (New User)
+                // ==========================================
                 if (step == AuthStep.COMPLETE_PROFILE) {
                     Text(
                         text = "WhatsApp number (+91 $phoneNumber) verify ho gaya hai! Kripya apna Naam aur Address enter karein taaki hum service schedule kar sakein.",

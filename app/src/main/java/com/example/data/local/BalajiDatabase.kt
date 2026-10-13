@@ -152,6 +152,7 @@ abstract class BalajiDatabase : RoomDatabase() {
                     title = "Jet Pump Chemical Foam Cleaning",
                     category = "AC Jet Wash",
                     description = "High-pressure washer clearing choked cooling fins with water jacket protection.",
+                    imageUrl = "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=800",
                     tag = "Before & After"
                 ),
                 GalleryItem(
@@ -159,6 +160,7 @@ abstract class BalajiDatabase : RoomDatabase() {
                     title = "Double Door Fridge Gas Refill",
                     category = "Fridge Repair",
                     description = "Samsung Frost Free refrigerator capillary tube cleaning & gas charging.",
+                    imageUrl = "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=800",
                     tag = "Completed"
                 ),
                 GalleryItem(
@@ -166,6 +168,7 @@ abstract class BalajiDatabase : RoomDatabase() {
                     title = "Split AC Precision Copper Piping",
                     category = "Installation",
                     description = "Daikin Inverter AC outdoor stand mounting & vacuum leak test.",
+                    imageUrl = "https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=800",
                     tag = "Precision"
                 ),
                 GalleryItem(
@@ -173,6 +176,7 @@ abstract class BalajiDatabase : RoomDatabase() {
                     title = "Inverter AC PCB Micro Repair",
                     category = "PCB & Compressor",
                     description = "Voltas Inverter AC mainboard IPM chip repair & sensor replacement.",
+                    imageUrl = "https://images.unsplash.com/photo-1518770660439-4636190af475?w=800",
                     tag = "Specialized"
                 ),
                 GalleryItem(
@@ -180,6 +184,7 @@ abstract class BalajiDatabase : RoomDatabase() {
                     title = "Deep Freezer Thermostat Calibration",
                     category = "Fridge Repair",
                     description = "Commercial Deep Freezer cooling restoration at -18°C.",
+                    imageUrl = "https://images.unsplash.com/photo-1571175443880-49e1d25b2bc5?w=800",
                     tag = "Verified"
                 ),
                 GalleryItem(
@@ -187,6 +192,7 @@ abstract class BalajiDatabase : RoomDatabase() {
                     title = "R32 Pure Refrigerant Charging",
                     category = "Gas Charging",
                     description = "Digital weighing scale OEM gas charging with vacuum gauge test.",
+                    imageUrl = "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=800",
                     tag = "100% Genuine"
                 )
             )

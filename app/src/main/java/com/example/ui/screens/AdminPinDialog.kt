@@ -122,13 +122,22 @@ fun AdminPinDialog(
                             textAlign = TextAlign.Center
                         )
                     },
+                    textStyle = LocalTextStyle.current.copy(
+                        color = Color.Black,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center
+                    ),
                     modifier = Modifier
                         .fillMaxWidth()
                         .testTag("admin_pin_input"),
                     shape = RoundedCornerShape(12.dp),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedTextColor = BalajiTextDark,
-                        unfocusedTextColor = BalajiTextDark,
+                        focusedTextColor = Color.Black,
+                        unfocusedTextColor = Color.Black,
+                        focusedContainerColor = Color.White,
+                        unfocusedContainerColor = Color.White,
+                        cursorColor = Color.Black,
                         focusedBorderColor = BalajiTealDeep,
                         unfocusedBorderColor = BalajiBorder,
                         errorBorderColor = BalajiEmergencyRed
