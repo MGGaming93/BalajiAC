@@ -687,7 +687,7 @@ fun HomeScreen(
                             Spacer(modifier = Modifier.height(6.dp))
 
                             Text(
-                                text = "Ek secure SMS OTP se login karein. Koi password yaad rakhne ki zaroorat nahi hai.",
+                                text = "WhatsApp verification se bina kisi OTP ke turant login karein.",
                                 fontSize = 12.sp,
                                 color = BalajiTextMuted,
                                 textAlign = TextAlign.Center

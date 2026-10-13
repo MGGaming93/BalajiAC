@@ -114,7 +114,7 @@ class FirebaseManager(private val context: Context) {
                 ""
             }
             if (serverClientId.isBlank()) {
-                onError("Google Sign-In Web Client ID nahi mila. Kripya Phone Login (OTP) use karein.")
+                onError("Google Sign-In Web Client ID nahi mila. Kripya WhatsApp Verification use karein.")
                 return
             }
 
